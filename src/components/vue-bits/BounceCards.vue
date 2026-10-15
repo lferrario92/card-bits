@@ -29,8 +29,30 @@
       @click.stop="handleCardClick(idx)"
       @contextmenu.prevent
     >
-      <div class="card-inner w-full h-full rounded-[30px] overflow-hidden">
-        <img class="w-full h-full object-cover" :src="card.image" :alt="card.title" draggable="false" />
+      <div class="card-inner relative w-full h-full rounded-[30px] overflow-hidden">
+        <img class="w-full h-full object-cover"
+          :class="canPlay(card) ? '' : 'grayscale-[0.6] brightness-75'"
+          :src="card.image" :alt="card.title" draggable="false" />
+
+        <!-- mana cost -->
+        <span class="absolute top-1 left-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-indigo-600 text-white text-[11px] font-bold shadow">
+          {{ card.manaCost }}
+        </span>
+        <!-- creature stats -->
+        <template v-if="card.type === 'creature'">
+          <span class="absolute bottom-1 left-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-md bg-amber-500 text-white text-[11px] font-bold shadow">
+            {{ card.attack ?? 0 }}
+          </span>
+          <span class="absolute bottom-1 right-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-md bg-rose-600 text-white text-[11px] font-bold shadow">
+            {{ card.health ?? 1 }}
+          </span>
+        </template>
+        <!-- charge keyword -->
+        <span v-if="card.charge"
+          class="absolute top-1 right-1 min-w-4 h-4 px-1 flex items-center justify-center rounded-br-md bg-indigo-400 text-white text-[9px] font-bold shadow"
+          title="Charge: can attack immediately">
+          ⚡
+        </span>
       </div>
     </div>
   </div>
@@ -39,19 +61,9 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
 import { nextTick, onMounted, onUnmounted, ref, watch, computed } from 'vue';
+import type { CardData } from '@/game/types';
 
-export interface CardData {
-  id: number
-  image: string
-  title: string
-  description: string
-  effects: string[]
-  cost?: number
-  attack?: number
-  defense?: number
-  type?: string
-  rarity?: string
-}
+export type { CardData };
 
 export interface BounceCardsProps {
   className?: string;
@@ -66,6 +78,8 @@ export interface BounceCardsProps {
   cardWidth?: number;
   cardHeight?: number;
   drawOrigin?: { x: number; y: number } | null;
+  /** When set, cards costing more than this are dimmed. */
+  availableMana?: number;
 }
 
 const props = withDefaults(defineProps<BounceCardsProps>(), {
@@ -89,6 +103,10 @@ const emit = defineEmits<{
 
 const containerRef = ref<HTMLElement | null>(null);
 const focusedIndex = ref<number | null>(null);
+
+function canPlay(card: CardData): boolean {
+  return props.availableMana == null ? true : card.manaCost <= props.availableMana;
+}
 
 const baseTransforms = computed(() => props.transformStyles.length > 0 ? props.transformStyles : generateDefaultArcTransforms());
 

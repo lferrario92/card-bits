@@ -380,7 +380,7 @@ onUnmounted(() => {
     <main class="flex-1 p-4 flex flex-col items-center justify-center">
       <div class="w-full max-w-4xl">
         <!-- Controls (only in stack state) -->
-        <div v-if="state === 'stack'" class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 shadow-xl border border-gray-200 dark:border-gray-700 mb-4">
+        <div v-if="state === 'stack' && false" class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 shadow-xl border border-gray-200 dark:border-gray-700 mb-4">
           <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
             <div>
               <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Width: {{ cardWidth }}px</label>
@@ -472,7 +472,7 @@ onUnmounted(() => {
                      style="box-shadow: inset 0 0 0 2px rgba(170, 59, 255, 0.6);"></div>
                 
                 <!-- Top card indicator (only in stack) -->
-                <div v-if="state === 'stack' && order[0] === idx" 
+                <div v-if="state === 'stack' && order[0] === idx && !isAnimating" 
                      class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-primary">
                   TOP ▼
                 </div>
