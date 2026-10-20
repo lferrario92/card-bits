@@ -29,6 +29,10 @@ function choose(id: string) {
   setStoredEnemyId(id)
   router.push('/bounce-cards')
 }
+
+function vsPlayer() {
+  router.push('/online')
+}
 </script>
 
 <template>
@@ -41,6 +45,20 @@ function choose(id: string) {
     </header>
 
     <main class="px-4 pb-28 space-y-3">
+      <button
+        @click="vsPlayer"
+        class="w-full text-left rounded-2xl overflow-hidden border-2 border-indigo-200 dark:border-indigo-900/60 hover:border-indigo-400 bg-white dark:bg-gray-800 shadow-sm active:scale-[0.99] transition"
+      >
+        <div class="flex items-center gap-3 p-3">
+          <span class="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-500 text-white text-lg font-bold">🌐</span>
+          <div class="flex-1 min-w-0">
+            <h2 class="text-base font-bold text-gray-900 dark:text-white">Battle a friend</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Play online with a share code.</p>
+          </div>
+          <span class="flex-shrink-0 text-indigo-500 text-lg font-bold">→</span>
+        </div>
+      </button>
+
       <button
         v-for="enemy in ENEMIES"
         :key="enemy.id"

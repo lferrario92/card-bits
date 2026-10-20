@@ -51,6 +51,11 @@ export interface BattleConfig {
    * or the spell effect applies.
    */
   onCardPlayStart?: (card: CardData, side: Side) => Promise<void> | void
+  /**
+   * Fired after any mutation that changes the visible battle state.
+   * Use it to broadcast snapshots or trigger UI side effects.
+   */
+  onStateChange?: () => void
 }
 
 let cardIdCounter = 1
@@ -70,6 +75,27 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
+
+/**
+ * Grammar helpers so log lines are correct whether the subject is the local
+ * "You" (PvE) or a real player name (PvP). In an online match the log is part
+ * of the shared battle state, so it may never assume which seat is reading.
+ */
+function verbIs(name: string): string {
+  return name === 'You' ? 'are' : 'is'
+}
+
+function verbHave(name: string): string {
+  return name === 'You' ? 'have' : 'has'
+}
+
+function verbPlay(name: string): string {
+  return name === 'You' ? 'play' : 'plays'
+}
+
+function possessive(name: string): string {
+  return name === 'You' ? 'your' : `${name}'s`
+}
 
 export function useBattle(config: BattleConfig) {
   const startingHand = config.startingHand ?? 5
@@ -100,6 +126,7 @@ export function useBattle(config: BattleConfig) {
 
   function log(msg: string) {
     state.log = [...state.log.slice(-40), msg]
+    config.onStateChange?.()
   }
 
   function entityForSide(side: Side): Entity {
@@ -110,31 +137,46 @@ export function useBattle(config: BattleConfig) {
     return side === 'player' ? state.playerBoard : state.opponentBoard
   }
 
+  /** Display name of the seat that owns `side`. */
+  function subject(side: Side): string {
+    return side === 'player' ? state.player.name : state.opponent.name
+  }
+
+  function markChanged() {
+    config.onStateChange?.()
+  }
+
   // --- Entity mutations ---
   function damage(target: Entity, amount: number) {
     const absorbed = Math.min(target.shield, amount)
     target.shield -= absorbed
     const remaining = amount - absorbed
     target.hp = Math.max(0, target.hp - remaining)
+    markChanged()
   }
 
   function heal(target: Entity, amount: number) {
     // Max HP cap applies only to direct HP healing.
     target.hp = Math.min(target.maxHp, target.hp + amount)
+    markChanged()
   }
 
   function shield(target: Entity, amount: number) {
     target.shield += amount
+    markChanged()
   }
 
   /** Creature combat damage goes straight to HP (armor/shield does not apply). */
   function damageCreature(creature: BoardCreature, amount: number) {
     creature.hp = Math.max(0, creature.hp - amount)
+    markChanged()
   }
 
   function cleanupDead() {
+    const p = state.playerBoard.length, o = state.opponentBoard.length
     state.playerBoard = state.playerBoard.filter(c => c.hp > 0)
     state.opponentBoard = state.opponentBoard.filter(c => c.hp > 0)
+    if (p !== state.playerBoard.length || o !== state.opponentBoard.length) markChanged()
   }
 
   function findCreature(instanceId: number): BoardCreature | null {
@@ -170,15 +212,15 @@ export function useBattle(config: BattleConfig) {
     switch (effect.action) {
       case 'damage':
         damage(target, effect.value)
-        log(`${target.name} takes ${effect.value} damage`)
+        log(`${target.name} — ${effect.value} damage`)
         break
       case 'heal':
         heal(target, effect.value)
-        log(`${target.name} restores ${effect.value} HP`)
+        log(`${target.name} — +${effect.value} HP`)
         break
       case 'shield':
         shield(target, effect.value)
-        log(`${target.name} gains ${effect.value} shield`)
+        log(`${target.name} — +${effect.value} shield`)
         break
     }
     checkOutcome()
@@ -189,6 +231,7 @@ export function useBattle(config: BattleConfig) {
       if (state.winner) break
       resolveEffect(effect, caster)
     }
+    markChanged()
   }
 
   function checkOutcome() {
@@ -196,12 +239,13 @@ export function useBattle(config: BattleConfig) {
     if (state.opponent.hp <= 0) {
       state.winner = 'player'
       state.phase = 'over'
-      log(`${state.opponent.name} is defeated — victory!`)
+      log(`${verbIs(state.opponent.name)} defeated — victory!`)
     } else if (state.player.hp <= 0) {
       state.winner = 'opponent'
       state.phase = 'over'
-      log(`You have been defeated...`)
+      log(`${verbHave(state.player.name)} been defeated...`)
     }
+    if (state.winner) markChanged()
   }
 
   // --- Mana / turn start ---
@@ -214,6 +258,7 @@ export function useBattle(config: BattleConfig) {
       c.canAttack = true
       c.summoningSick = false
     }
+    markChanged()
   }
 
   function canPlayCard(card: CardData, side: Side): boolean {
@@ -237,12 +282,14 @@ export function useBattle(config: BattleConfig) {
     if (side === 'player') state.hand = nextHand
     else state.opponentHand = nextHand
 
-    log(`${side === 'player' ? 'You' : state.opponent.name} play${side === 'player' ? '' : 's'} ${card.title}`)
+    const who = subject(side)
+    log(`${who} ${verbPlay(who)} ${card.title}`)
 
     if (card.type === 'spell') {
       resolveEffects(card.effects, side)
       if (side === 'player') state.discardPile = [...state.discardPile, card]
       else state.opponentDiscardPile = [...state.opponentDiscardPile, card]
+      markChanged()
     } else {
       const maxHp = card.health && card.health > 0 ? card.health : 1
       const creature: BoardCreature = {
@@ -262,6 +309,7 @@ export function useBattle(config: BattleConfig) {
       // Entrance / on-play effects reuse the same effect list.
       resolveEffects(card.effects, side)
     }
+    markChanged()
     return true
   }
 
@@ -296,7 +344,7 @@ export function useBattle(config: BattleConfig) {
     if (!attacker.canAttack) return false
 
     const enemySide: Side = attacker.side === 'player' ? 'opponent' : 'player'
-    const owner = attacker.side === 'player' ? 'Your' : `${state.opponent.name}'s`
+    const owner = possessive(subject(attacker.side))
 
     if (target.type === 'hero') {
       const hero = entityForSide(enemySide)
@@ -326,7 +374,7 @@ export function useBattle(config: BattleConfig) {
 
     if (drawPile.length === 0) {
       if (discardPile.length === 0) {
-        if (side === 'player') log('Your deck is empty!')
+        if (side === 'player') log(`${possessive(subject(side))} deck is empty!`)
         return
       }
       const reshuffled = shuffle(discardPile)
@@ -337,6 +385,7 @@ export function useBattle(config: BattleConfig) {
         state.opponentDrawPile = reshuffled
         state.opponentDiscardPile = []
       }
+      markChanged()
     }
 
     const pile = side === 'player' ? state.drawPile : state.opponentDrawPile
@@ -349,10 +398,13 @@ export function useBattle(config: BattleConfig) {
       state.opponentDrawPile = pile.slice(1)
       state.opponentHand = [...state.opponentHand, card]
     }
+    markChanged()
   }
 
   // --- Opponent AI ---
   async function defaultOpponentTurn() {
+    if (state.winner) return
+    drawCard('opponent')
     // Spend available mana on the most expensive affordable cards.
     let guard = 0
     while (!state.winner && guard++ < 8) {
@@ -389,8 +441,10 @@ export function useBattle(config: BattleConfig) {
     if (state.phase !== 'player' || state.winner || busy.value) return
     busy.value = true
     state.phase = 'opponent'
-    log(`${state.opponent.name}'s turn`)
+    log(`${possessive(state.opponent.name)} turn`)
     startTurn('opponent')
+    drawCard('opponent')
+    markChanged()
 
     await delay(opponentDelay)
     if (state.winner) {
@@ -414,9 +468,10 @@ export function useBattle(config: BattleConfig) {
     state.turn += 1
     startTurn('player')
     drawCard('player')
-    log(`Turn ${state.turn} — your move`)
+    log(`Turn ${state.turn} — ${possessive(state.player.name)} move`)
     state.phase = 'player'
     busy.value = false
+    markChanged()
   }
 
   // --- Setup / reset ---
@@ -444,7 +499,8 @@ export function useBattle(config: BattleConfig) {
     state.winner = null
     state.log = []
     busy.value = false
-    log('Battle start — your move')
+    log(`Battle start — ${possessive(state.player.name)} move`)
+    markChanged()
   }
 
   init()
@@ -456,6 +512,7 @@ export function useBattle(config: BattleConfig) {
     isOver,
     canDraw,
     playCard,
+    playCardAnimated,
     attack,
     canPlayCard,
     drawCard,

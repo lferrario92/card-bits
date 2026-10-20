@@ -7,8 +7,8 @@ const router = useRouter()
 const route = useRoute()
 
 const currentPath = computed(() => route.path)
-// The card battle view is a full-screen game surface with no bottom nav.
-const hideNav = computed(() => route.name === 'BounceCards')
+// The battle and lobby views are full-screen surfaces with no bottom nav.
+const hideNav = computed(() => route.name === 'BounceCards' || route.meta.hideNav === true)
 </script>
 
 <template>

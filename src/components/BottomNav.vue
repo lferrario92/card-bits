@@ -10,12 +10,12 @@ const props = defineProps<Props>()
 const router = useRouter()
 
 const navItems = [
-  { path: '/balatro', label: 'Balatro', icon: '♠' },
+  { path: '/drift-wall', label: 'Home', icon: '🏠' },
   { path: '/enemies', label: 'Fight', icon: '⚔️' },
+  { path: '/online', label: 'Online', icon: '🌐' },
   { path: '/decks', label: 'Decks', icon: '🗂️' },
   { path: '/card-swap', label: 'Swap', icon: '🔄' },
-  { path: '/stack-market', label: 'Stack', icon: '📚' },
-  { path: '/drift-wall', label: 'Drift', icon: '≋' },
+  { path: '/profile', label: 'Profile', icon: '👤' },
 ]
 
 const isActive = (path: string) => props.currentPath === path

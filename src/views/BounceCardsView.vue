@@ -4,25 +4,31 @@ import HealthBar from '@/components/game/HealthBar.vue'
 import CreatureTile from '@/components/game/CreatureTile.vue'
 import BattleOverlay from '@/components/game/BattleOverlay.vue'
 import BattleLog from '@/components/game/BattleLog.vue'
-import { useBattle } from '@/game/useBattle'
+import { createAiController, useOnlineController, type BattleController, type LocalDeck } from '@/composables/useBattleController'
 import { STARTER_CARDS } from '@/game/cards'
 import { getSelectedEnemy } from '@/game/enemies'
 import { useDecks } from '@/game/useDecks'
 import { describeCardEffects } from '@/game/effects'
 import type { BoardCreature } from '@/game/types'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 const { currentDeck, currentDeckTemplates } = useDecks()
 
 // The battle uses the deck selected in the deck builder (falling back to the
 // starter deck when the current deck has no cards yet).
-const playerDeckTemplates = (() => {
+const playerDeck: LocalDeck = (() => {
   const current = currentDeckTemplates()
-  return current.length > 0 ? current : [...STARTER_CARDS]
+  return { templates: current.length > 0 ? current : [...STARTER_CARDS], name: currentDeck?.name ?? 'Starter Deck' }
 })()
+
+// --- Mode: online (PvP) when the lobby handed us a code, else VS AI ---
+const onlineCode = typeof route.query.code === 'string' ? route.query.code : ''
+const onlineRole = route.query.role === 'guest' ? 'guest' : route.query.role === 'host' ? 'host' : null
+const isOnline = !!onlineCode && !!onlineRole
 
 // The opponent chosen in the enemy select view (falls back to the first).
 const enemy = getSelectedEnemy()
@@ -55,29 +61,59 @@ async function revealOpponentCard(card: CardData): Promise<void> {
   })
 }
 
-const {
-  state,
-  busy,
-  isPlayerTurn,
-  isOver,
-  canDraw,
-  playCard,
-  attack,
-  drawCard,
-  endTurn,
-  reset,
-  playerTurnLabel,
-} = useBattle({
-  playerDeck: playerDeckTemplates,
-  opponentDeck: [...enemy.deck],
-  playerName: 'You',
-  opponentName: enemy.name,
-  playerMaxHp: 30,
-  opponentMaxHp: enemy.hp,
-  startingHand: 5,
-  opponentDelay: 1000,
-  onCardPlayStart: (card, side) => (side === 'opponent' ? revealOpponentCard(card) : undefined),
-})
+// --- Controller (uniform AI / host / guest interface) ---
+let controller: BattleController
+let destroyOnline: (() => void) | null = null
+
+  if (isOnline) {
+    const online = useOnlineController({
+      code: onlineCode,
+      role: onlineRole,
+      selfName: 'You',
+      opponentName: 'Opponent',
+      selfDeck: playerDeck,
+      opponentDeck: [...playerDeck.templates],
+      opponentMaxHp: 30,
+      onOpponentPlay: (card) => revealOpponentCard(card),
+    })
+    controller = online.controller
+    destroyOnline = online.destroy
+  } else {
+  controller = createAiController(playerDeck, [...enemy.deck], {
+    opponentName: enemy.name,
+    opponentMaxHp: enemy.hp,
+    onOpponentPlay: (card) => revealOpponentCard(card),
+  })
+}
+
+async function playerPlayCard(card: CardData): Promise<boolean> {
+  return controller.playCard(card)
+}
+
+function playerAttack(attackerId: number, target: BoardCreature | 'hero'): boolean {
+  return controller.attack(attackerId, target === 'hero' ? { type: 'hero' } : { type: 'creature', instanceId: target.instanceId })
+}
+
+function playerDraw() {
+  controller.drawCard()
+}
+
+function playerEndTurn() {
+  controller.endTurn()
+}
+
+function playerReset() {
+  controller.reset()
+}
+
+const state = computed(() => controller.state)
+const busy = computed(() => controller.busy.value)
+const isPlayerTurn = computed(() => controller.isPlayerTurn.value)
+const isOver = computed(() => controller.isOver.value)
+const canDraw = computed(() => controller.canDraw.value)
+const playerTurnLabel = computed(() => controller.playerTurnLabel.value)
+
+console.log('[view]', isOnline ? `online-${onlineRole}` : 'ai', 'phase=', state.value.phase, 'hand=', state.value.hand.length, 'oppName=', state.value.opponent.name, 'isPlayerTurn=', isPlayerTurn.value)
 
 const selectedCard = ref<CardData | null>(null)
 const playing = ref(false)
@@ -86,15 +122,15 @@ const showPanel = ref(false)
 
 // --- Combat targeting ---
 const attackerId = ref<number | null>(null)
-const attacker = computed(() => state.playerBoard.find(c => c.instanceId === attackerId.value) ?? null)
+const attacker = computed(() => state.value.playerBoard.find(c => c.instanceId === attackerId.value) ?? null)
 const targeting = computed(() => !!attacker.value && isPlayerTurn.value)
-const canAfford = computed(() => !!selectedCard.value && state.player.mana >= selectedCard.value.manaCost)
+const canAfford = computed(() => !!selectedCard.value && state.value.player.mana >= selectedCard.value.manaCost)
 
 const bounceRef = ref<InstanceType<typeof BounceCards> | null>(null)
 const deckEl = ref<HTMLElement | null>(null)
 const drawOrigin = ref<{ x: number; y: number } | null>(null)
 
-const opponentTag = computed(() => state.opponent.name.split(' ').pop() ?? state.opponent.name)
+const opponentTag = computed(() => state.value.opponent.name.split(' ').pop() ?? state.value.opponent.name)
 
 function flash(msg: string) {
   message.value = msg
@@ -104,7 +140,7 @@ function flash(msg: string) {
 
 const selectedEffects = computed(() => (selectedCard.value ? describeCardEffects(selectedCard.value.effects) : []))
 
-const topDiscard = computed(() => state.discardPile[state.discardPile.length - 1] ?? null)
+const topDiscard = computed(() => state.value.discardPile[state.value.discardPile.length - 1] ?? null)
 
 function captureDrawOrigin() {
   const rect = deckEl.value?.getBoundingClientRect()
@@ -114,7 +150,7 @@ function captureDrawOrigin() {
 function onDrawClick() {
   if (!isPlayerTurn.value || !canDraw.value) return
   captureDrawOrigin()
-  drawCard('player')
+  playerDraw()
 }
 
 function exitView() {
@@ -126,7 +162,7 @@ function exitView() {
 async function playSelectedCard() {
   const card = selectedCard.value
   if (!card || playing.value || !isPlayerTurn.value) return
-  if (state.player.mana < card.manaCost) {
+  if (state.value.player.mana < card.manaCost) {
     flash('Not enough mana')
     return
   }
@@ -135,7 +171,7 @@ async function playSelectedCard() {
   selectedCard.value = null
   attackerId.value = null
   await bounceRef.value?.playCardOut(id)
-  playCard(card, 'player')
+  await playerPlayCard(card)
   playing.value = false
 }
 
@@ -143,7 +179,7 @@ function onEndTurn() {
   if (!isPlayerTurn.value) return
   selectedCard.value = null
   attackerId.value = null
-  endTurn()
+  playerEndTurn()
 }
 
 function onCardSelected(card: CardData | null) {
@@ -169,13 +205,13 @@ function onPlayerCreatureClick(c: BoardCreature) {
 function onOpponentCreatureClick(c: BoardCreature) {
   const a = attacker.value
   if (!a || !isPlayerTurn.value) return
-  if (attack(a.instanceId, { type: 'creature', instanceId: c.instanceId })) attackerId.value = null
+  if (playerAttack(a.instanceId, c)) attackerId.value = null
 }
 
 function onOpponentHeroClick() {
   const a = attacker.value
   if (!a || !isPlayerTurn.value) return
-  if (attack(a.instanceId, { type: 'hero' })) attackerId.value = null
+  if (playerAttack(a.instanceId, 'hero')) attackerId.value = null
 }
 
 function onReset() {
@@ -183,7 +219,9 @@ function onReset() {
   attackerId.value = null
   playing.value = false
   message.value = ''
-  reset()
+  // An online match can't be restarted in place; return to the lobby instead.
+  if (isOnline) router.push('/online')
+  else playerReset()
 }
 
 // --- Card sizing / layout ---
@@ -202,7 +240,7 @@ const cardAspectRatio = computed(() => cardWidth.value / cardHeight.value)
 function computeAutoCardWidth(): number {
   const padding = 16
   const availableWidth = effectiveContainerWidth.value - padding
-  const count = state.hand.length
+  const count = state.value.hand.length
   if (count <= 1) return Math.min(84, availableWidth * 0.6)
   const maxCardWidth = availableWidth / (count * 0.75)
   return Math.min(84, Math.max(48, maxCardWidth))
@@ -227,7 +265,7 @@ function computeArcTransforms(count: number): string[] {
   })
 }
 
-const arcTransformStyles = computed(() => computeArcTransforms(state.hand.length))
+const arcTransformStyles = computed(() => computeArcTransforms(state.value.hand.length))
 
 const resetSizes = () => {
   cardWidth.value = 64
@@ -246,7 +284,7 @@ const updateContainerWidth = () => {
 
 // Keep the deck origin fresh for turn-start draws performed by the engine
 watch(
-  () => state.hand.length,
+  () => state.value.hand.length,
   (n, o) => {
     if (n > o) captureDrawOrigin()
   }
@@ -259,6 +297,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateContainerWidth)
+  destroyOnline?.()
 })
 
 function typeLabel(type: string) {
@@ -321,7 +360,7 @@ function typeLabel(type: string) {
         <div class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1">Current Deck</div>
         <div class="flex items-center gap-2">
           <span class="flex-1 min-w-0 text-xs font-semibold text-gray-900 dark:text-white truncate">{{ currentDeck?.name ?? 'Starter Deck' }}</span>
-          <span class="flex-shrink-0 text-[10px] text-gray-400 dark:text-gray-500">{{ playerDeckTemplates.length }} cards</span>
+          <span class="flex-shrink-0 text-[10px] text-gray-400 dark:text-gray-500">{{ playerDeck.templates.length }} cards</span>
           <router-link to="/decks"
             class="flex-shrink-0 px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-[11px] font-bold">
             Edit decks
