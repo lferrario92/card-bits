@@ -7,7 +7,7 @@ import type { CardTemplate } from './types'
  */
 export const STARTER_CARDS: CardTemplate[] = [
   {
-    image: 'https://picsum.photos/id/1015/400/400',
+    image: "https://htjexffvezuflvuvrspf.supabase.co/storage/v1/object/public/cards/base2025/mas_90mil.webp",
     title: 'Fire Dragon',
     description: 'A majestic dragon that breathes scorching flames.',
     type: 'creature',
@@ -18,7 +18,7 @@ export const STARTER_CARDS: CardTemplate[] = [
     effects: [{ target: 'opponent', action: 'damage', value: 5 }],
   },
   {
-    image: 'https://picsum.photos/id/1025/400/400',
+    image: "https://htjexffvezuflvuvrspf.supabase.co/storage/v1/object/public/cards/base2025/casual_plapla.jpeg",
     title: 'Ice Shield',
     description: 'A magical barrier of frozen air.',
     type: 'spell',
@@ -27,7 +27,7 @@ export const STARTER_CARDS: CardTemplate[] = [
     effects: [{ target: 'self', action: 'shield', value: 8 }],
   },
   {
-    image: 'https://picsum.photos/id/1039/400/400',
+    image: "https://htjexffvezuflvuvrspf.supabase.co/storage/v1/object/public/cards/base2026/garlick_boga.jpeg",
     title: 'Lightning Bolt',
     description: 'Strikes a single target with raw electricity.',
     type: 'spell',
@@ -36,7 +36,7 @@ export const STARTER_CARDS: CardTemplate[] = [
     effects: [{ target: 'opponent', action: 'damage', value: 8 }],
   },
   {
-    image: 'https://picsum.photos/id/1043/400/400',
+    image: "https://htjexffvezuflvuvrspf.supabase.co/storage/v1/object/public/cards/base2025/turno2.jpg",
     title: 'Healing Spirit',
     description: 'A benevolent spirit that restores vitality.',
     type: 'creature',
@@ -47,7 +47,7 @@ export const STARTER_CARDS: CardTemplate[] = [
     effects: [{ target: 'self', action: 'heal', value: 6 }],
   },
   {
-    image: 'https://picsum.photos/id/1050/400/400',
+    image: "https://htjexffvezuflvuvrspf.supabase.co/storage/v1/object/public/cards/gordona/contento.jpg",
     title: 'Shadow Assassin',
     description: 'Strikes from darkness with deadly precision.',
     type: 'creature',
@@ -62,7 +62,7 @@ export const STARTER_CARDS: CardTemplate[] = [
     ],
   },
   {
-    image: 'https://picsum.photos/id/1062/400/400',
+    image: "https://htjexffvezuflvuvrspf.supabase.co/storage/v1/object/public/cards/base2026/shuffle_gino.jpeg",
     title: 'Earth Golem',
     description: 'A massive construct of stone and magic.',
     type: 'creature',
@@ -76,7 +76,7 @@ export const STARTER_CARDS: CardTemplate[] = [
     ],
   },
   {
-    image: 'https://picsum.photos/id/1069/400/400',
+    image: "https://htjexffvezuflvuvrspf.supabase.co/storage/v1/object/public/cards/kelano/kelano_vino.webp",
     title: 'Frost Wolf',
     description: 'A swift predator of the frozen north. Charges in immediately.',
     type: 'creature',
@@ -88,7 +88,7 @@ export const STARTER_CARDS: CardTemplate[] = [
     effects: [{ target: 'opponent', action: 'damage', value: 3 }],
   },
   {
-    image: 'https://picsum.photos/id/1074/400/400',
+    image: "https://htjexffvezuflvuvrspf.supabase.co/storage/v1/object/public/cards/base2025/glass_posta.jpg",
     title: 'Arcane Missiles',
     description: 'Unyielding bolts of raw arcane energy.',
     type: 'spell',
@@ -100,7 +100,7 @@ export const STARTER_CARDS: CardTemplate[] = [
     ],
   },
   {
-    image: 'https://picsum.photos/id/1080/400/400',
+    image: "https://htjexffvezuflvuvrspf.supabase.co/storage/v1/object/public/cards/leyendas/frutillas.jpg",
     title: 'Holy Light',
     description: 'Divine radiance that mends wounds and wards the faithful.',
     type: 'spell',
@@ -112,7 +112,7 @@ export const STARTER_CARDS: CardTemplate[] = [
     ],
   },
   {
-    image: 'https://picsum.photos/id/1084/400/400',
+    image: "https://htjexffvezuflvuvrspf.supabase.co/storage/v1/object/public/cards/base2026/duo_san_patricio.jpeg",
     title: 'Poison Dagger',
     description: 'A venom-coated blade that weakens foes.',
     type: 'creature',
@@ -126,7 +126,7 @@ export const STARTER_CARDS: CardTemplate[] = [
     ],
   },
   {
-    image: 'https://picsum.photos/id/1018/400/400',
+    image: "https://htjexffvezuflvuvrspf.supabase.co/storage/v1/object/public/cards/base2025/marca_de_agua.webp",
     title: 'Stone Bulwark',
     description: 'Raises a wall of stone to blunt incoming blows.',
     type: 'spell',
@@ -135,7 +135,7 @@ export const STARTER_CARDS: CardTemplate[] = [
     effects: [{ target: 'self', action: 'shield', value: 5 }],
   },
   {
-    image: 'https://picsum.photos/id/1020/400/400',
+    image: "https://htjexffvezuflvuvrspf.supabase.co/storage/v1/object/public/cards/base2025/Mauritus.jpg",
     title: 'Blood Rite',
     description: 'A dark ritual that trades your own vitality for power.',
     type: 'spell',
@@ -147,6 +147,13 @@ export const STARTER_CARDS: CardTemplate[] = [
     ],
   },
 ]
+
+/**
+ * The full catalog of cards that booster packs can draw from. Kept separate
+ * from the starter deck so the catalog can grow (and later be served from a
+ * remote database) without changing battle/deck logic.
+ */
+export const CARD_CATALOG: CardTemplate[] = STARTER_CARDS
 
 /** Cards the mock opponent uses. Slightly more aggressive. */
 export const OPPONENT_CARDS: CardTemplate[] = [

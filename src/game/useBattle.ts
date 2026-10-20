@@ -45,6 +45,12 @@ export interface BattleConfig {
    * opponents (or difficulty levels) can be plugged in without touching the engine.
    */
   onOpponentTurn?: (api: BattleApi) => Promise<void> | void
+  /**
+   * Awaited right before a card leaves the hand and its effect resolves.
+   * Use it to reveal the card (e.g. animate it) before the creature appears
+   * or the spell effect applies.
+   */
+  onCardPlayStart?: (card: CardData, side: Side) => Promise<void> | void
 }
 
 let cardIdCounter = 1
@@ -259,6 +265,22 @@ export function useBattle(config: BattleConfig) {
     return true
   }
 
+  /**
+   * Play a card after optionally awaiting a reveal animation. The card is
+   * still validated inside playCard, so a hook that fails or changes nothing
+   * is harmless.
+   */
+  async function playCardAnimated(card: CardData, side: Side): Promise<boolean> {
+    if (config.onCardPlayStart) {
+      try {
+        await config.onCardPlayStart(card, side)
+      } catch {
+        // never let a UI animation break the battle
+      }
+    }
+    return playCard(card, side)
+  }
+
   // --- Combat ---
   /**
    * Resolve a creature's attack. Returns true if the attack was performed.
@@ -340,8 +362,8 @@ export function useBattle(config: BattleConfig) {
       const wantsCreature = state.opponentBoard.length < 4 && creatures.length > 0
       const pool = wantsCreature ? creatures : affordable
       const chosen = pool.reduce((best, c) => (c.manaCost > best.manaCost ? c : best), pool[0])
-      playCard(chosen, 'opponent')
-      if (!state.winner) await delay(450)
+      await playCardAnimated(chosen, 'opponent')
+      if (!state.winner) await delay(280)
     }
     if (state.winner) return
 

@@ -7,6 +7,8 @@ const router = useRouter()
 const route = useRoute()
 
 const currentPath = computed(() => route.path)
+// The card battle view is a full-screen game surface with no bottom nav.
+const hideNav = computed(() => route.name === 'BounceCards')
 </script>
 
 <template>
@@ -14,7 +16,7 @@ const currentPath = computed(() => route.path)
     <RouterView v-slot="{ Component }">
       <component :is="Component" />
     </RouterView>
-    <BottomNav :current-path="currentPath" />
+    <BottomNav v-if="!hideNav" :current-path="currentPath" />
   </div>
 </template>
 

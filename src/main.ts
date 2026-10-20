@@ -4,17 +4,21 @@ import './style.css'
 import App from './App.vue'
 import BalatroView from './views/BalatroView.vue'
 import BounceCardsView from './views/BounceCardsView.vue'
+import EnemySelectView from './views/EnemySelectView.vue'
 import DriftWallView from './views/DriftWallView.vue'
 import CardSwapView from './views/CardSwapView.vue'
 import StackMarketView from './views/StackMarketView.vue'
+import DeckBuilderView from './views/DeckBuilderView.vue'
 
 const routes = [
   { path: '/', redirect: '/balatro' },
   { path: '/balatro', name: 'Balatro', component: BalatroView },
-  { path: '/bounce-cards', name: 'BounceCards', component: BounceCardsView },
+    { path: '/enemies', name: 'Enemies', component: EnemySelectView },
+    { path: '/bounce-cards', name: 'BounceCards', component: BounceCardsView },
   { path: '/drift-wall', name: 'DriftWall', component: DriftWallView },
   { path: '/card-swap', name: 'CardSwap', component: CardSwapView },
   { path: '/stack-market', name: 'StackMarket', component: StackMarketView },
+  { path: '/decks', name: 'Decks', component: DeckBuilderView },
 ]
 
 const router = createRouter({

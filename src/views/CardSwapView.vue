@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, defineComponent, h } from 'vue'
 import { gsap } from 'gsap'
+import { CARD_CATALOG } from '@/game/cards'
+import { addTemplates } from '@/game/collection'
+import type { CardTemplate } from '@/game/types'
 
 // Proper Card component that forwards ref to the root element
 const Card = defineComponent({
@@ -46,23 +49,13 @@ const PACK_CONFIGS: PackConfig[] = [
   { size: 6, label: 'Large Pack', color: 'bg-purple-500 hover:bg-purple-600', icon: '💎' },
 ]
 
-const availableImages = [
-  'https://picsum.photos/id/1015/400/400',
-  'https://picsum.photos/id/1025/400/400',
-  'https://picsum.photos/id/1039/400/400',
-  'https://picsum.photos/id/1043/400/400',
-  'https://picsum.photos/id/1050/400/400',
-  'https://picsum.photos/id/1062/400/400',
-  'https://picsum.photos/id/1069/400/400',
-  'https://picsum.photos/id/1074/400/400',
-  'https://picsum.photos/id/1080/400/400',
-  'https://picsum.photos/id/1084/400/400',
-  'https://picsum.photos/id/1090/400/400',
-  'https://picsum.photos/id/1095/400/400',
-]
+// Current pack cards (reactive for grid view)
+const packCards = ref<CardTemplate[]>([])
 
-// Current pack images (reactive for grid view)
-const images = ref<string[]>([])
+// Booster opening animation state
+const packOpening = ref(false)
+const pendingIcon = ref('🎁')
+const boosterRef = ref<HTMLElement | null>(null)
 
 const cardWidth = ref(280)
 const cardHeight = ref(380)
@@ -83,11 +76,47 @@ const currentPackSize = ref(5)
 
 const cardInstances = ref<Array<{ cardRef: HTMLElement | null }>>([])
 
+// The stack shows at most this many cards, regardless of pack size.
+const MAX_STACK = 4
+
+// Rarity drives the colour of the top card's frame so the stack telegraphs
+// what is about to be revealed.
+const RARITY_RING: Record<string, string> = {
+  Common: 'ring-gray-400',
+  Uncommon: 'ring-green-400',
+  Rare: 'ring-blue-400',
+  Epic: 'ring-purple-400',
+  Legendary: 'ring-amber-400',
+}
+
+const RARITY_COLORS: Record<string, string> = {
+  Common: '#9ca3af',
+  Uncommon: '#4ade80',
+  Rare: '#60a5fa',
+  Epic: '#c084fc',
+  Legendary: '#fbbf24',
+}
+
+function rarityRing(rarity?: string): string {
+  return RARITY_RING[rarity ?? 'Common'] ?? RARITY_RING.Common
+}
+
+function rarityColor(rarity?: string): string {
+  return RARITY_COLORS[rarity ?? 'Common'] ?? RARITY_COLORS.Common
+}
+
+function isTopCard(idx: number): boolean {
+  return state.value === 'stack' && order.value[0] === idx && !isAnimating.value
+}
+
 function makeSlot(i: number, distX: number, distY: number, total: number) {
+  // Clamp the visual position so the stack never fans out beyond MAX_STACK
+  // cards; extra cards tuck in behind the last visible one.
+  const pos = Math.min(i, MAX_STACK - 1)
   return {
-    x: i * distX,
-    y: -i * distY,
-    z: -i * distX * 2,
+    x: pos * distX,
+    y: -pos * distY,
+    z: -pos * distX * 2,
     zIndex: total - i
   }
 }
@@ -121,29 +150,60 @@ function getCardElements(): HTMLElement[] {
 
 async function initPack(packSize: number) {
   currentPackSize.value = packSize
-  // Shuffle and pick images for this pack
-  const shuffled = [...availableImages].sort(() => Math.random() - 0.5)
-  images.value = shuffled.slice(0, packSize)
+  // Draw real cards from the catalog for this pack.
+  const shuffled = [...CARD_CATALOG].sort(() => Math.random() - 0.5)
+  const picked = shuffled.slice(0, packSize)
+  packCards.value = picked
+  state.value = 'stack'
+
+  // Unlock the drawn cards for deck building.
+  addTemplates(picked)
   
   await nextTick()
   const cards = getCardElements()
   const total = cards.length
   order.value = Array.from({ length: total }, (_, i) => i)
   seenCards.value.clear()
-  state.value = 'stack'
   cards.forEach((card, i) => {
     card.style.width = cssDim(cardWidth.value)
     card.style.height = cssDim(cardHeight.value)
     placeNow(card, makeSlot(i, cardDistance.value, verticalDistance.value, total), skewAmount.value)
   })
+
+  // Fade the freshly mounted stack in.
+  gsap.fromTo(cards, { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.06, ease: 'power2.out' })
 }
 
 async function openPack(packSize: number) {
   if (isAnimating.value) return
   isAnimating.value = true
-  state.value = 'stack'
+
+  // Play a short booster-opening animation before the cards spawn.
+  const cfg = PACK_CONFIGS.find(p => p.size === packSize)
+  pendingIcon.value = cfg?.icon ?? '🎁'
+  packOpening.value = true
+  await nextTick()
+  await playBoosterAnimation()
+  packOpening.value = false
+
   await initPack(packSize)
   isAnimating.value = false
+}
+
+// Pop in, shake, then burst before the cards appear.
+function playBoosterAnimation(): Promise<void> {
+  const el = boosterRef.value
+  return new Promise((resolve) => {
+    if (!el) return resolve()
+    gsap.killTweensOf(el)
+    gsap.set(el, { scale: 0.2, opacity: 0, rotation: 0, transformOrigin: 'center center' })
+
+    const tl = gsap.timeline({ onComplete: () => resolve() })
+    tl.to(el, { scale: 1, opacity: 1, duration: 0.3, ease: 'back.out(1.7)' })
+      .to(el, { rotation: 6, duration: 0.06, yoyo: true, repeat: 5, ease: 'power1.inOut' })
+      .to(el, { rotation: 0, duration: 0.06 })
+      .to(el, { scale: 1.9, opacity: 0, duration: 0.32, ease: 'power2.in' })
+  })
 }
 
 async function swapTopToBack() {
@@ -226,7 +286,7 @@ async function fanOutAndReturnToMarket() {
       isAnimating.value = false
       state.value = 'market'
       // Clear cards after fan out
-      images.value = []
+      packCards.value = []
       order.value = []
       seenCards.value.clear()
     }
@@ -337,24 +397,28 @@ function handleContainerClick() {
 function handleReset() {
   isAnimating.value = false
   state.value = 'market'
-  images.value = []
+  packCards.value = []
   order.value = []
   seenCards.value.clear()
 }
 
 const getTopCardIndex = computed(() => order[0])
 
+// Full-screen reveal mode: while a pack is opening, being revealed, or fanned
+// out, hide the market behind an immersive layer so the focus stays on cards.
+const immersive = computed(() => state.value !== 'market' || packOpening.value)
+
 const getStateText = computed(() => {
   if (state.value === 'market') return 'Choose a pack to open'
   if (state.value === 'grid') return 'All cards revealed! Click anywhere to open pack.'
   if (state.value === 'opening') return 'Opening pack...'
   if (isAnimating.value) return 'Animating...'
-  return `Click top card (Card #${getTopCardIndex.value + 1}) — ${seenCards.size} of ${images.length} revealed`
+  return `Click top card (Card #${getTopCardIndex.value + 1}) — ${seenCards.size} of ${packCards.length} revealed`
 })
 
 const getProgressText = computed(() => {
   if (state.value === 'stack') {
-    return `${seenCards.size} / ${images.length} revealed`
+    return `${seenCards.size} / ${packCards.length} revealed`
   }
   return ''
 })
@@ -362,7 +426,7 @@ const getProgressText = computed(() => {
 onMounted(() => {
   // Start in market state, no cards
   state.value = 'market'
-  images.value = []
+  packCards.value = []
   order.value = []
   seenCards.value.clear()
 })
@@ -422,7 +486,7 @@ onUnmounted(() => {
         </div>
 
         <!-- Market State - Pack Selection Buttons -->
-        <div v-if="state === 'market'" class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-gray-700 mb-4 text-center">
+        <div v-if="state === 'market' && !packOpening" class="fade-in-up bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-gray-700 mb-4 text-center">
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Booster Pack Market</h2>
           <p class="text-gray-600 dark:text-gray-400 mb-6">Select a pack to open</p>
           
@@ -441,43 +505,68 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Card Container - Only visible in stack/grid/opening states -->
-        <div v-if="state === 'stack' || state === 'grid' || state === 'opening'" class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200 dark:border-gray-700 relative min-h-[500px] flex items-center justify-center" 
-             ref="containerRef" @click="handleContainerClick">
-          <div class="relative perspective-[2000px]" style="width: 100%; height: 480px;">
-            <Card
-              v-for="(src, idx) in images"
-              :key="idx"
-              ref="cardInstances"
-              :data-index="idx"
-              :class="['cursor-pointer', { 'ring-2 ring-primary ring-offset-2 ring-offset-gray-900 dark:ring-offset-gray-800': state === 'stack' && order[0] === idx && !isAnimating }]"
-              @click="handleCardClick(idx)"
-            >
-              <div class="w-full h-full relative">
-                <!-- Card front - always visible -->
-                <div class="absolute inset-0 rounded-2xl overflow-hidden" style="backface-visibility: hidden;">
-                  <img :src="src" :alt="`card-${idx}`" class="w-full h-full object-cover" />
-                  <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
-                    <div class="text-white font-bold text-sm">Card #{{ idx + 1 }}</div>
-                    <div class="text-white/70 text-xs">
-                      Position: {{ order.indexOf(idx) + 1 }} of {{ images.length }}
-                      <span v-if="seenCards.has(idx) && state === 'stack'" class="ml-2 text-green-300">✓ Revealed</span>
+        <!-- Immersive full-screen reveal layer -->
+        <div v-if="immersive" class="fixed inset-0 z-[60] bg-slate-950/95 backdrop-blur-md flex items-center justify-center overflow-hidden">
+          <!-- Booster opening animation -->
+          <div v-if="packOpening" class="relative flex items-center justify-center">
+            <div class="absolute w-72 h-72 rounded-full bg-primary/30 blur-3xl" aria-hidden="true"></div>
+            <div ref="boosterRef" class="relative w-40 h-56 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-600 to-fuchsia-600 border border-white/25 shadow-2xl flex flex-col items-center justify-center gap-3 [transform-style:preserve-3d] [will-change:transform]" style="opacity: 0;">
+              <span class="text-6xl drop-shadow-lg" aria-hidden="true">{{ pendingIcon }}</span>
+              <span class="text-white text-sm font-bold tracking-[0.2em]">BOOSTER</span>
+            </div>
+          </div>
+
+          <!-- Card Container - visible in stack/grid/opening states -->
+          <div v-else class="relative w-full h-full flex items-center justify-center" 
+               ref="containerRef" @click="handleContainerClick">
+            <div class="relative perspective-[2000px]" style="width: 100%; height: 480px;">
+              <Card
+                v-for="(card, idx) in packCards"
+                :key="idx"
+                ref="cardInstances"
+                :data-index="idx"
+                :class="['cursor-pointer', isTopCard(idx) ? ['ring-2', 'ring-offset-2', 'ring-offset-gray-900', 'dark:ring-offset-gray-800', rarityRing(card.rarity)] : '']"
+                @click="handleCardClick(idx)"
+              >
+                <div class="w-full h-full relative">
+                  <!-- Card face -->
+                  <div class="absolute inset-0 rounded-2xl overflow-hidden" style="backface-visibility: hidden;">
+                    <img :src="card.image" :alt="card.title" class="w-full h-full object-cover" draggable="false" />
+                    <span class="absolute top-2 left-2 min-w-7 h-7 px-1.5 flex items-center justify-center rounded-full bg-indigo-600 text-white text-xs font-bold shadow-lg">{{ card.manaCost }}</span>
+                    <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/50 text-white text-[10px] font-semibold">{{ card.rarity ?? 'Common' }}</span>
+                    <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/85 to-transparent">
+                      <div class="text-white font-bold text-sm">{{ card.title }}</div>
+                      <div class="flex items-center gap-2 mt-1">
+                        <span class="text-[11px] text-white/70">{{ card.type === 'creature' ? 'Creature' : 'Spell' }}</span>
+                        <template v-if="card.type === 'creature'">
+                          <span class="px-1.5 py-0.5 rounded bg-amber-500 text-white text-[10px] font-bold">{{ card.attack ?? 0 }}</span>
+                          <span class="px-1.5 py-0.5 rounded bg-rose-500 text-white text-[10px] font-bold">{{ card.health ?? 0 }}</span>
+                        </template>
+                        <span v-if="seenCards.has(idx) && state === 'stack'" class="ml-auto text-[10px] text-green-300 font-semibold">✓ Revealed</span>
+                      </div>
                     </div>
                   </div>
+
+                  <!-- Rarity-colored top border / highlight for the top card -->
+                  <div v-if="isTopCard(idx)"
+                       class="absolute inset-0 rounded-2xl pointer-events-none"
+                       :style="{ boxShadow: `inset 0 0 0 2px ${rarityColor(card.rarity)}` }"></div>
+
+                  <!-- Top card indicator (only in stack) -->
+                  <div v-if="isTopCard(idx)"
+                       class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold"
+                       :style="{ color: rarityColor(card.rarity) }">
+                    TOP ▼
+                  </div>
                 </div>
-                
-                <!-- Subtle highlight for top card (only in stack) -->
-                <div v-if="state === 'stack' && order[0] === idx && !isAnimating" 
-                     class="absolute inset-0 rounded-2xl pointer-events-none"
-                     style="box-shadow: inset 0 0 0 2px rgba(170, 59, 255, 0.6);"></div>
-                
-                <!-- Top card indicator (only in stack) -->
-                <div v-if="state === 'stack' && order[0] === idx && !isAnimating" 
-                     class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-primary">
-                  TOP ▼
-                </div>
-              </div>
-            </Card>
+              </Card>
+            </div>
+
+            <!-- Grid hint -->
+            <p v-if="state === 'grid'"
+               class="absolute bottom-6 left-0 right-0 text-center text-sm font-medium text-gray-300 pointer-events-none animate-pulse">
+              Click anywhere to continue
+            </p>
           </div>
         </div>
 
@@ -520,5 +609,20 @@ onUnmounted(() => {
 main {
   min-height: calc(100vh - 60px);
   min-height: calc(100dvh - 60px);
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.45s ease-out both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
