@@ -2,9 +2,10 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth, type MatchStats } from '@/composables/useAuth'
+import { fetchUserCards, type DbUserCard } from '@/lib/supabase'
 
 const router = useRouter()
-const { displayName, initials, email, memberSince, busy, authError, signOut, updateDisplayName, fetchStats } =
+const { displayName, initials, email, memberSince, busy, authError, signOut, updateDisplayName, fetchStats, user } =
   useAuth()
 
 const stats = ref<MatchStats>({ wins: 0, losses: 0, draws: 0, matches: 0 })
@@ -13,6 +14,9 @@ const editing = ref(false)
 const nameDraft = ref('')
 const savedFlash = ref(false)
 const loadError = ref('')
+const userCards = ref<DbUserCard[]>([])
+const cardsLoading = ref(false)
+const cardsError = ref('')
 
 async function loadStats() {
   loading.value = true
@@ -22,7 +26,24 @@ async function loadStats() {
   loading.value = false
 }
 
-onMounted(loadStats)
+async function loadUserCards() {
+  if (!user.value?.id) return
+  cardsLoading.value = true
+  cardsError.value = ''
+  try {
+    userCards.value = await fetchUserCards(user.value.id)
+  } catch (err) {
+    console.error('Error loading user cards:', err)
+    cardsError.value = err instanceof Error ? err.message : 'Failed to load cards'
+  } finally {
+    cardsLoading.value = false
+  }
+}
+
+onMounted(() => {
+  loadStats()
+  loadUserCards()
+})
 
 const winRate = computed(() =>
   stats.value.matches > 0 ? Math.round((stats.value.wins / stats.value.matches) * 100) : 0
@@ -145,6 +166,38 @@ async function onSignOut() {
         <p v-else-if="stats.matches === 0" class="mt-3 text-center text-xs text-gray-400 dark:text-gray-500">
           No finished PvP matches yet — create one from the Fight screen.
         </p>
+      </section>
+
+      <!-- User Cards -->
+      <section class="rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-bold text-gray-900 dark:text-white">My Cards</h2>
+          <button @click="loadUserCards" class="text-[11px] font-bold text-primary">Refresh</button>
+        </div>
+
+        <p v-if="cardsError" class="text-xs font-semibold text-rose-600 dark:text-rose-400 mb-3">{{ cardsError }}</p>
+
+        <div v-if="cardsLoading" class="text-center text-xs text-gray-400 dark:text-gray-500">Loading cards…</div>
+        <div v-else-if="userCards.length === 0" class="text-center text-xs text-gray-400 dark:text-gray-500">
+          No cards yet — open boosters to collect cards!
+        </div>
+        <div v-else class="grid grid-cols-3 gap-2">
+          <div
+            v-for="userCard in userCards"
+            :key="userCard.id"
+            class="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800"
+          >
+            <img
+              :src="userCard.cards.image || 'https://via.placeholder.com/150'"
+              :alt="userCard.cards.name"
+              class="w-full h-24 object-cover"
+            />
+            <div class="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm px-2 py-1">
+              <p class="text-[10px] font-bold text-white truncate">{{ userCard.cards.name }}</p>
+              <p class="text-[9px] text-gray-300">×{{ userCard.count }}</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Session -->

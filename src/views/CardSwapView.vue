@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, defineComponent, h } from 'vue'
 import { gsap } from 'gsap'
-import { CARD_CATALOG } from '@/game/cards'
 import { addTemplates } from '@/game/collection'
 import type { CardTemplate } from '@/game/types'
+import { fetchAvailableBoosters, openBooster, type DbBooster } from '@/lib/supabase'
+import { useAuth } from '@/composables/useAuth'
 
 // Proper Card component that forwards ref to the root element
 const Card = defineComponent({
@@ -35,20 +36,6 @@ const Card = defineComponent({
   }
 })
 
-// Pack configurations
-interface PackConfig {
-  size: number
-  label: string
-  color: string
-  icon: string
-}
-
-const PACK_CONFIGS: PackConfig[] = [
-  { size: 3, label: 'Small Pack', color: 'bg-green-500 hover:bg-green-600', icon: '📦' },
-  { size: 5, label: 'Standard Pack', color: 'bg-blue-500 hover:bg-blue-600', icon: '🎁' },
-  { size: 6, label: 'Large Pack', color: 'bg-purple-500 hover:bg-purple-600', icon: '💎' },
-]
-
 // Current pack cards (reactive for grid view)
 const packCards = ref<CardTemplate[]>([])
 
@@ -56,6 +43,7 @@ const packCards = ref<CardTemplate[]>([])
 const packOpening = ref(false)
 const pendingIcon = ref('🎁')
 const boosterRef = ref<HTMLElement | null>(null)
+const selectedBooster = ref<DbBooster | null>(null)
 
 const cardWidth = ref(280)
 const cardHeight = ref(380)
@@ -73,6 +61,10 @@ const order = ref<number[]>([])
 const seenCards = ref<Set<number>>(new Set())
 // Current pack size
 const currentPackSize = ref(5)
+
+// Boosters fetched from Supabase
+const boosters = ref<DbBooster[]>([])
+const openError = ref<string | null>(null)
 
 const cardInstances = ref<Array<{ cardRef: HTMLElement | null }>>([])
 
@@ -148,17 +140,14 @@ function getCardElements(): HTMLElement[] {
   return cardInstances.value.map(inst => inst.cardRef).filter((el): el is HTMLElement => el !== null)
 }
 
-async function initPack(packSize: number) {
-  currentPackSize.value = packSize
-  // Draw real cards from the catalog for this pack.
-  const shuffled = [...CARD_CATALOG].sort(() => Math.random() - 0.5)
-  const picked = shuffled.slice(0, packSize)
+async function initPackFromCards(picked: CardTemplate[]) {
+  currentPackSize.value = picked.length
   packCards.value = picked
   state.value = 'stack'
 
   // Unlock the drawn cards for deck building.
   addTemplates(picked)
-  
+
   await nextTick()
   const cards = getCardElements()
   const total = cards.length
@@ -174,20 +163,59 @@ async function initPack(packSize: number) {
   gsap.fromTo(cards, { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.06, ease: 'power2.out' })
 }
 
-async function openPack(packSize: number) {
+async function openPack(booster: DbBooster) {
   if (isAnimating.value) return
   isAnimating.value = true
+  openError.value = null
+
+  // Set the selected booster for the animation
+  selectedBooster.value = booster
 
   // Play a short booster-opening animation before the cards spawn.
-  const cfg = PACK_CONFIGS.find(p => p.size === packSize)
-  pendingIcon.value = cfg?.icon ?? '🎁'
+  pendingIcon.value = '🎁'
   packOpening.value = true
   await nextTick()
   await playBoosterAnimation()
   packOpening.value = false
 
-  await initPack(packSize)
-  isAnimating.value = false
+  const { user } = useAuth()
+  const userId = user.value?.id
+  if (!userId) {
+    openError.value = 'You must be signed in to open a booster.'
+    isAnimating.value = false
+    selectedBooster.value = null
+    return
+  }
+
+  try {
+    const result = await openBooster(userId, booster.id)
+
+    // Map the real opened cards into templates the existing card renderer can show.
+    const templates: CardTemplate[] = (result.cards ?? []).map((c) => ({
+      title: c.name,
+      image: c.image ?? '',
+      description: c.description ?? '',
+      type: 'spell',
+      manaCost: 0,
+      rarity: c.rarity ?? 'Common',
+      effects: []
+    }))
+
+    if (templates.length === 0) {
+      openError.value = 'The booster contained no cards.'
+      isAnimating.value = false
+      selectedBooster.value = null
+      return
+    }
+
+    await initPackFromCards(templates)
+  } catch (err) {
+    console.error('Error opening booster:', err)
+    openError.value = err instanceof Error ? err.message : 'Failed to open booster'
+    selectedBooster.value = null
+  } finally {
+    isAnimating.value = false
+  }
 }
 
 // Pop in, shake, then burst before the cards appear.
@@ -289,6 +317,7 @@ async function fanOutAndReturnToMarket() {
       packCards.value = []
       order.value = []
       seenCards.value.clear()
+      selectedBooster.value = null
     }
   })
   
@@ -400,6 +429,7 @@ function handleReset() {
   packCards.value = []
   order.value = []
   seenCards.value.clear()
+  selectedBooster.value = null
 }
 
 const getTopCardIndex = computed(() => order[0])
@@ -413,22 +443,29 @@ const getStateText = computed(() => {
   if (state.value === 'grid') return 'All cards revealed! Click anywhere to open pack.'
   if (state.value === 'opening') return 'Opening pack...'
   if (isAnimating.value) return 'Animating...'
-  return `Click top card (Card #${getTopCardIndex.value + 1}) — ${seenCards.size} of ${packCards.length} revealed`
+  return `Click top card (Card #${getTopCardIndex.value + 1}) — ${seenCards.size} of ${packCards.value.length} revealed`
 })
 
 const getProgressText = computed(() => {
   if (state.value === 'stack') {
-    return `${seenCards.size} / ${packCards.length} revealed`
+    return `${seenCards.size} / ${packCards.value.length} revealed`
   }
   return ''
 })
 
-onMounted(() => {
+onMounted(async () => {
   // Start in market state, no cards
   state.value = 'market'
   packCards.value = []
   order.value = []
   seenCards.value.clear()
+  selectedBooster.value = null
+  try {
+    boosters.value = await fetchAvailableBoosters()
+  } catch (err) {
+    console.error('Error fetching boosters:', err)
+    openError.value = err instanceof Error ? err.message : 'Failed to load boosters'
+  }
 })
 
 onUnmounted(() => {
@@ -490,17 +527,18 @@ onUnmounted(() => {
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Booster Pack Market</h2>
           <p class="text-gray-600 dark:text-gray-400 mb-6">Select a pack to open</p>
           
-          <div class="flex gap-4 justify-center flex-wrap">
-            <button 
-              v-for="pack in PACK_CONFIGS"
-              :key="pack.size"
-              @click="openPack(pack.size)"
+          <div class="flex flex-col gap-4 items-center">
+            <button
+              v-for="booster in boosters"
+              :key="booster.id"
+              @click="openPack(booster)"
               :disabled="isAnimating"
-              :class="['px-8 py-4 rounded-xl font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex flex-col items-center gap-1 text-base', pack.color]"
+              :style="{ backgroundImage: `url(${booster.cover_image || 'https://via.placeholder.com/150'})` }"
+              class="w-48 h-72 rounded-xl font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex flex-col items-center justify-between gap-1 text-base bg-cover bg-center hover:scale-105"
             >
-              <span class="text-3xl">{{ pack.icon }}</span>
-              <span>{{ pack.label }}</span>
-              <span class="text-xs opacity-75">{{ pack.size }} cards</span>
+              <!--  -->
+              <span class="bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.name }}</span>
+              <span class="text-xs bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.card_count }} cards · {{ booster.price }} credits</span>
             </button>
           </div>
         </div>
@@ -510,9 +548,14 @@ onUnmounted(() => {
           <!-- Booster opening animation -->
           <div v-if="packOpening" class="relative flex items-center justify-center">
             <div class="absolute w-72 h-72 rounded-full bg-primary/30 blur-3xl" aria-hidden="true"></div>
-            <div ref="boosterRef" class="relative w-40 h-56 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-600 to-fuchsia-600 border border-white/25 shadow-2xl flex flex-col items-center justify-center gap-3 [transform-style:preserve-3d] [will-change:transform]" style="opacity: 0;">
+            <div
+              ref="boosterRef"
+              :style="{ backgroundImage: 'url(/booster_pack.jpg)' }"
+              class="relative w-40 h-56 rounded-2xl bg-cover bg-center border border-white/25 shadow-2xl flex flex-col items-center justify-end gap-3 pb-4 [transform-style:preserve-3d] [will-change:transform]"
+              style="opacity: 0;"
+            >
               <span class="text-6xl drop-shadow-lg" aria-hidden="true">{{ pendingIcon }}</span>
-              <span class="text-white text-sm font-bold tracking-[0.2em]">BOOSTER</span>
+              <span class="bg-black/60 px-3 py-1 rounded-lg backdrop-blur-sm text-white text-sm font-bold tracking-[0.2em]">{{ selectedBooster?.name || 'BOOSTER' }}</span>
             </div>
           </div>
 
