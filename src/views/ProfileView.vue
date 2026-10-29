@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth, type MatchStats } from '@/composables/useAuth'
 import { fetchUserCards, type DbUserCard } from '@/lib/supabase'
+import TcgCard from '@/components/TcgCard.vue'
 
 const router = useRouter()
 const { displayName, initials, email, memberSince, busy, authError, signOut, updateDisplayName, fetchStats, user } =
@@ -17,6 +18,11 @@ const loadError = ref('')
 const userCards = ref<DbUserCard[]>([])
 const cardsLoading = ref(false)
 const cardsError = ref('')
+
+// Filter state
+const filterMenuOpen = ref(false)
+const filterType = ref<'all' | 'creature' | 'spell'>('all')
+const filterManaCost = ref<'all' | 1 | 2 | 3 | 4 | 5 | 6 | 7>('all')
 
 async function loadStats() {
   loading.value = true
@@ -48,6 +54,25 @@ onMounted(() => {
 const winRate = computed(() =>
   stats.value.matches > 0 ? Math.round((stats.value.wins / stats.value.matches) * 100) : 0
 )
+
+const filteredCards = computed(() => {
+  return userCards.value.filter(card => {
+    const combatData = card.cards.tcg_combat_data
+    if (!combatData) return false
+
+    // Filter by type
+    if (filterType.value !== 'all' && combatData.type !== filterType.value) {
+      return false
+    }
+
+    // Filter by mana cost
+    if (filterManaCost.value !== 'all' && combatData.manaCost !== filterManaCost.value) {
+      return false
+    }
+
+    return true
+  })
+})
 
 const joinedLabel = computed(() => {
   if (!memberSince.value) return ''
@@ -172,7 +197,74 @@ async function onSignOut() {
       <section class="rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm p-5">
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-sm font-bold text-gray-900 dark:text-white">My Cards</h2>
-          <button @click="loadUserCards" class="text-[11px] font-bold text-primary">Refresh</button>
+          <div class="flex gap-2">
+            <button @click="filterMenuOpen = !filterMenuOpen" class="text-[11px] font-bold text-primary">Filter</button>
+            <button @click="loadUserCards" class="text-[11px] font-bold text-primary">Refresh</button>
+          </div>
+        </div>
+
+        <!-- Filter Menu -->
+        <div v-if="filterMenuOpen" class="mb-4 p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <div class="space-y-3">
+            <!-- Type Filter -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Card Type</label>
+              <div class="flex gap-2">
+                <button
+                  @click="filterType = 'all'"
+                  :class="filterType === 'all' ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                  class="px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                >
+                  All
+                </button>
+                <button
+                  @click="filterType = 'creature'"
+                  :class="filterType === 'creature' ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                  class="px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                >
+                  Creature
+                </button>
+                <button
+                  @click="filterType = 'spell'"
+                  :class="filterType === 'spell' ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                  class="px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                >
+                  Spell
+                </button>
+              </div>
+            </div>
+
+            <!-- Mana Cost Filter -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Mana Cost</label>
+              <div class="flex gap-2 flex-wrap">
+                <button
+                  @click="filterManaCost = 'all'"
+                  :class="filterManaCost === 'all' ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                  class="px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                >
+                  All
+                </button>
+                <button
+                  v-for="cost in [1, 2, 3, 4, 5, 6, 7]"
+                  :key="cost"
+                  @click="filterManaCost = cost"
+                  :class="filterManaCost === cost ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                  class="px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                >
+                  {{ cost }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Clear Filters -->
+            <button
+              @click="filterType = 'all'; filterManaCost = 'all'"
+              class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            >
+              Clear all filters
+            </button>
+          </div>
         </div>
 
         <p v-if="cardsError" class="text-xs font-semibold text-rose-600 dark:text-rose-400 mb-3">{{ cardsError }}</p>
@@ -181,22 +273,15 @@ async function onSignOut() {
         <div v-else-if="userCards.length === 0" class="text-center text-xs text-gray-400 dark:text-gray-500">
           No cards yet — open boosters to collect cards!
         </div>
-        <div v-else class="grid grid-cols-3 gap-2">
-          <div
-            v-for="userCard in userCards"
+        <div v-else-if="filteredCards.length === 0" class="text-center text-xs text-gray-400 dark:text-gray-500">
+          No cards match your filters.
+        </div>
+        <div v-else class="grid grid-cols-2 gap-3">
+          <TcgCard
+            v-for="userCard in filteredCards"
             :key="userCard.id"
-            class="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800"
-          >
-            <img
-              :src="userCard.cards.image || 'https://via.placeholder.com/150'"
-              :alt="userCard.cards.name"
-              class="w-full h-24 object-cover"
-            />
-            <div class="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm px-2 py-1">
-              <p class="text-[10px] font-bold text-white truncate">{{ userCard.cards.name }}</p>
-              <p class="text-[9px] text-gray-300">×{{ userCard.count }}</p>
-            </div>
-          </div>
+            :card="userCard"
+          />
         </div>
       </section>
 

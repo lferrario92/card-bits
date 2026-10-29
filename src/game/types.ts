@@ -1,6 +1,6 @@
 export type CardType = 'spell' | 'creature'
 
-export type EffectTarget = 'opponent' | 'player' | 'self'
+export type EffectTarget = 'opponent' | 'player' | 'self' | 'all'
 
 export type EffectAction = 'damage' | 'heal' | 'shield'
 

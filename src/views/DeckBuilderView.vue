@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useDecks } from '@/game/useDecks'
-import { useCollection } from '@/game/collection'
 import { cardKey } from '@/game/decks'
 import type { CardTemplate } from '@/game/types'
+import { fetchUserCards, dbCardToTemplate, type DbUserCard } from '@/lib/supabase'
+import { useAuth } from '@/composables/useAuth'
+import TcgCard from '@/components/TcgCard.vue'
+import CombatCard from '@/components/CombatCard.vue'
 
 const {
   decks,
@@ -20,9 +23,16 @@ const {
   MAX_COPIES,
 } = useDecks()
 
-const { getOwnedCards } = useCollection()
+const { user } = useAuth()
 
-const pool = computed(() => getOwnedCards())
+const userCards = ref<DbUserCard[]>([])
+const cardsLoading = ref(false)
+const cardsError = ref('')
+
+// Convert user cards to CardTemplate for deck building
+const pool = computed(() => {
+  return userCards.value.map(dbCard => dbCardToTemplate(dbCard.cards))
+})
 
 const editingId = ref<string | null>(null)
 const nameInput = ref('')
@@ -54,6 +64,22 @@ const deckGroups = computed<{ card: CardTemplate; count: number }[]>(() => {
   }
   return order.map(k => map.get(k)!)
 })
+
+async function loadUserCards() {
+  if (!user.value?.id) return
+  cardsLoading.value = true
+  cardsError.value = ''
+  try {
+    userCards.value = await fetchUserCards(user.value.id)
+  } catch (err) {
+    console.error('Error loading user cards:', err)
+    cardsError.value = err instanceof Error ? err.message : 'Failed to load cards'
+  } finally {
+    cardsLoading.value = false
+  }
+}
+
+onMounted(loadUserCards)
 
 function openDeck(id: string) {
   editingId.value = id
@@ -198,9 +224,9 @@ function typeLabel(type: string): string {
       </div>
     </header>
 
-    <main class="flex-1 px-3 pt-3 pb-24 space-y-5">
-      <!-- Deck contents -->
-      <section>
+    <main class="flex-1 flex flex-col px-3 pt-3 pb-24">
+      <!-- Deck contents - two fixed rows with horizontal scroll -->
+      <section class="flex-shrink-0 mb-4">
         <div class="flex items-baseline justify-between mb-2 px-1">
           <h2 class="text-sm font-bold text-gray-900 dark:text-white">In this deck</h2>
           <span class="text-[11px] text-gray-400 dark:text-gray-500">max {{ MAX_COPIES }} copies · {{ MAX_CARDS }} cards</span>
@@ -211,67 +237,57 @@ function typeLabel(type: string): string {
           Empty deck — add cards from the library below.
         </div>
 
-        <div v-else class="grid grid-cols-3 gap-2">
-          <button v-for="g in deckGroups" :key="g.card.title" @click="removeCard(editingDeck.id, g.card)"
-            class="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 active:scale-[0.97] transition text-left"
-            :title="`Remove one ${g.card.title}`">
-            <img :src="g.card.image" :alt="g.card.title" class="w-full aspect-[3/4] object-cover" draggable="false" />
-            <span class="absolute top-1 left-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold shadow">
-              {{ g.card.manaCost }}
-            </span>
-            <span class="absolute top-1 right-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-black/70 text-white text-[10px] font-bold shadow">
-              ×{{ g.count }}
-            </span>
-            <span class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent px-1.5 pt-3 pb-1">
-              <span class="block text-[10px] font-medium text-white truncate">{{ g.card.title }}</span>
-            </span>
-            <span class="absolute bottom-1 right-1 w-5 h-5 flex items-center justify-center rounded-full bg-rose-500 text-white text-xs font-bold shadow">−</span>
-          </button>
+        <div v-else class="flex gap-2 overflow-x-auto pb-2">
+          <div v-for="g in deckGroups" :key="g.card.title" class="flex-shrink-0 relative">
+            <button
+              @click="removeCard(editingDeck.id, g.card)"
+              class="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-rose-500 text-white text-xs font-bold shadow z-10 active:scale-[0.97] transition"
+              :title="`Remove one ${g.card.title}`"
+            >−</button>
+            <CombatCard :card="g.card" :count="g.count" compact />
+          </div>
         </div>
       </section>
 
-      <!-- Card library -->
-      <section>
+      <!-- Card library - user cards with TcgCard component -->
+      <section class="flex-1 min-h-0 flex flex-col">
         <div class="flex items-baseline justify-between mb-2 px-1">
-          <h2 class="text-sm font-bold text-gray-900 dark:text-white">Card Library</h2>
-          <span class="text-[11px] text-gray-400 dark:text-gray-500">{{ pool.length }} cards</span>
+          <h2 class="text-sm font-bold text-gray-900 dark:text-white">Your Cards</h2>
+          <span class="text-[11px] text-gray-400 dark:text-gray-500">{{ userCards.length }} cards</span>
         </div>
 
-        <div class="grid grid-cols-3 gap-2">
-          <button v-for="card in pool" :key="card.title" @click="addCard(editingDeck.id, card)"
-            :disabled="!canAdd(card)"
-            class="relative rounded-lg overflow-hidden border aspect-[3/4] transition active:scale-[0.97]"
-            :class="[
-              canAdd(card) ? 'border-gray-200 dark:border-gray-700' : 'border-gray-200 dark:border-gray-700 opacity-45',
-              (counts[cardKey(card)] ?? 0) > 0 ? 'ring-2 ring-primary/60' : '',
-            ]"
-            :title="canAdd(card) ? `Add ${card.title}` : 'Limit reached'">
-            <img :src="card.image" :alt="card.title"
-              class="absolute inset-0 w-full h-full object-cover"
-              :class="canAdd(card) ? '' : 'grayscale-[0.5]'" draggable="false" />
-            <span class="absolute top-1 left-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold shadow">
-              {{ card.manaCost }}
-            </span>
-            <span v-if="card.attack !== undefined"
-              class="absolute top-1 left-7 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-amber-500 text-white text-[10px] font-bold shadow">
-              {{ card.attack }}
-            </span>
-            <span v-if="card.health !== undefined"
-              class="absolute top-1 left-[3.25rem] min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-rose-600 text-white text-[10px] font-bold shadow">
-              {{ card.health }}
-            </span>
-            <span class="absolute top-1 right-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-full text-white text-[10px] font-bold shadow"
-              :class="(counts[cardKey(card)] ?? 0) > 0 ? 'bg-primary' : 'bg-black/60'">
-              {{ counts[cardKey(card)] ?? 0 }}/{{ MAX_COPIES }}
-            </span>
-            <span class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent px-1.5 pt-3 pb-1">
-              <span class="block text-[10px] font-medium text-white truncate">{{ card.title }}</span>
-            </span>
-            <span v-if="canAdd(card)"
-              class="absolute bottom-1 right-1 w-5 h-5 flex items-center justify-center rounded-full bg-emerald-500 text-white text-xs font-bold shadow">＋</span>
-            <span v-else
-              class="absolute bottom-1 right-1 w-5 h-5 flex items-center justify-center rounded-full bg-gray-500 text-white text-xs font-bold shadow">✓</span>
-          </button>
+        <div v-if="cardsLoading" class="text-center text-xs text-gray-400 dark:text-gray-500">Loading cards…</div>
+        <div v-else-if="cardsError" class="text-center text-xs text-rose-600 dark:text-rose-400">{{ cardsError }}</div>
+        <div v-else-if="userCards.length === 0" class="text-center text-xs text-gray-400 dark:text-gray-500">
+          No cards yet — open boosters to collect cards!
+        </div>
+        <div v-else class="flex-1 overflow-y-auto">
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              v-for="userCard in userCards"
+              :key="userCard.id"
+              @click="addCard(editingDeck.id, dbCardToTemplate(userCard.cards))"
+              :disabled="!canAdd(dbCardToTemplate(userCard.cards))"
+              class="relative active:scale-[0.97] transition"
+              :class="!canAdd(dbCardToTemplate(userCard.cards)) ? 'opacity-45' : ''"
+            >
+              <TcgCard :card="userCard" />
+              <span
+                class="absolute top-2 right-2 min-w-6 h-6 px-1 flex items-center justify-center rounded-full text-white text-[10px] font-bold shadow"
+                :class="(counts[cardKey(dbCardToTemplate(userCard.cards))] ?? 0) > 0 ? 'bg-primary' : 'bg-black/60'"
+              >
+                {{ counts[cardKey(dbCardToTemplate(userCard.cards))] ?? 0 }}/{{ MAX_COPIES }}
+              </span>
+              <span
+                v-if="canAdd(dbCardToTemplate(userCard.cards))"
+                class="absolute bottom-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-emerald-500 text-white text-xs font-bold shadow"
+              >＋</span>
+              <span
+                v-else
+                class="absolute bottom-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-500 text-white text-xs font-bold shadow"
+              >✓</span>
+            </button>
+          </div>
         </div>
       </section>
     </main>

@@ -2,22 +2,76 @@
 import DriftWall from '@/components/vue-bits/DriftWall.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const items = ref([
-  { image: 'https://picsum.photos/id/1015/600/400', title: 'Mountain View' },
-  { image: 'https://picsum.photos/id/1025/600/400', title: 'Ocean Sunset' },
-  { image: 'https://picsum.photos/id/1039/600/400', title: 'Forest Path' },
-  { image: 'https://picsum.photos/id/1043/600/400', title: 'Desert Dunes' },
-  { image: 'https://picsum.photos/id/1050/600/400', title: 'City Lights' },
-  { image: 'https://picsum.photos/id/1062/600/400', title: 'Lake Reflection' },
-  { image: 'https://picsum.photos/id/1069/600/400', title: 'Northern Lights' },
-  { image: 'https://picsum.photos/id/1074/600/400', title: 'Waterfall' },
-  { image: 'https://picsum.photos/id/1080/600/400', title: 'Canyon' },
-  { image: 'https://picsum.photos/id/1084/600/400', title: 'Meadow' },
-  { image: 'https://picsum.photos/id/106/600/400', title: 'Volcano' },
-  { image: 'https://picsum.photos/id/110/600/400', title: 'Glacier' },
-  { image: 'https://picsum.photos/id/133/600/400', title: 'Rainforest' },
-  { image: 'https://picsum.photos/id/164/600/400', title: 'Coral Reef' },
-])
+// Collection of local images from assets/local_cards
+const allImages = [
+  '/assets/local_cards/base2025/Mauritus.jpg',
+  '/assets/local_cards/base2025/casual_plapla.jpeg',
+  '/assets/local_cards/base2025/certificado_90mil.webp',
+  '/assets/local_cards/base2025/como_dijo.jpg',
+  '/assets/local_cards/base2025/cratinus.png',
+  '/assets/local_cards/base2025/fuiste_denegado.webp',
+  '/assets/local_cards/base2025/galbo_frasco.webp',
+  '/assets/local_cards/base2025/giant_santerk.jpg',
+  '/assets/local_cards/base2025/gino_amazed.webp',
+  '/assets/local_cards/base2025/gino_carry_galbo.webp',
+  '/assets/local_cards/base2025/gino_excelente.webp',
+  '/assets/local_cards/base2025/gino_face.webp',
+  '/assets/local_cards/base2025/gino_king.webp',
+  '/assets/local_cards/base2025/gino_lobas.webp',
+  '/assets/local_cards/base2025/glass_posta.jpg',
+  '/assets/local_cards/base2025/golden_gwen.jpg',
+  '/assets/local_cards/base2025/happy_folks.jpg',
+  '/assets/local_cards/base2025/hentai.webp',
+  '/assets/local_cards/base2025/invalid_santerk.webp',
+  '/assets/local_cards/base2025/kevin_campeon.jpg',
+  '/assets/local_cards/base2025/kevin_momia.webp',
+  '/assets/local_cards/base2025/kevin_pool.jpg',
+  '/assets/local_cards/base2025/manuk.jpg',
+  '/assets/local_cards/base2025/marca_de_agua.webp',
+  '/assets/local_cards/base2025/martin_sleep.webp',
+  '/assets/local_cards/base2025/mas_90mil.webp',
+  '/assets/local_cards/base2025/menos_90mil.webp',
+  '/assets/local_cards/base2025/pajero.jpg',
+  '/assets/local_cards/base2025/parece_arti.jpg',
+  '/assets/local_cards/base2025/perdi_cartitas.webp',
+  '/assets/local_cards/base2025/permitime_confirmar.webp',
+  '/assets/local_cards/base2025/permitime_denegar.webp',
+  '/assets/local_cards/base2025/permitime_dudar.webp',
+  '/assets/local_cards/base2025/podria_ser_sticker.webp',
+  '/assets/local_cards/base2025/posta_crema.webp',
+  '/assets/local_cards/base2025/posta_cucharita.jpg',
+  '/assets/local_cards/base2025/pringles.png',
+  '/assets/local_cards/base2025/que_gracioso.jpg',
+  '/assets/local_cards/base2025/regular_size_chizitos.jpg',
+  '/assets/local_cards/base2025/sanguche_seco.webp',
+  '/assets/local_cards/base2025/santerk_dragon.jpg',
+  '/assets/local_cards/base2025/santerk_drunk.jpg',
+  '/assets/local_cards/base2025/tranquilos_pregunte.webp',
+  '/assets/local_cards/base2025/turno2.jpg',
+  '/assets/local_cards/base2025/unamuno.jpg',
+  '/assets/local_cards/base2025/wayne_rosarinos.webp',
+  '/assets/local_cards/base2025/weakling.webp',
+  '/assets/local_cards/base2025/wheel_tortuga.webp',
+  '/assets/local_cards/base2026/garlick_boga.jpeg',
+  '/assets/local_cards/base2026/shuffle_gino.jpeg',
+  '/assets/local_cards/gordona/contento.jpg',
+  '/assets/local_cards/kelano/kelano_vino.webp',
+  '/assets/local_cards/leyendas/frutillas.jpg',
+  '/assets/local_cards/base.jpg',
+]
+
+// Function to get random 40 images
+function getRandomImages(count: number, imageList: string[]) {
+  const shuffled = [...imageList].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
+}
+
+const items = ref(
+  getRandomImages(40, allImages).map(image => ({
+    image,
+    title: image.split('/').pop() || 'Image'
+  }))
+)
 
 // Enough columns to cover the viewport width at any size
 const columns = ref(6)

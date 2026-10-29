@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick, defineComponent, h } f
 import { gsap } from 'gsap'
 import { addTemplates } from '@/game/collection'
 import type { CardTemplate } from '@/game/types'
-import { fetchAvailableBoosters, openBooster, type DbBooster } from '@/lib/supabase'
+import { fetchAvailableBoosters, openBooster, dbCardToTemplate, type DbBooster } from '@/lib/supabase'
 import { useAuth } from '@/composables/useAuth'
 
 // Proper Card component that forwards ref to the root element
@@ -190,16 +190,8 @@ async function openPack(booster: DbBooster) {
   try {
     const result = await openBooster(userId, booster.id)
 
-    // Map the real opened cards into templates the existing card renderer can show.
-    const templates: CardTemplate[] = (result.cards ?? []).map((c) => ({
-      title: c.name,
-      image: c.image ?? '',
-      description: c.description ?? '',
-      type: 'spell',
-      manaCost: 0,
-      rarity: c.rarity ?? 'Common',
-      effects: []
-    }))
+    // Map the real opened cards into templates using the new helper function
+    const templates: CardTemplate[] = (result.cards ?? []).map((c) => dbCardToTemplate(c))
 
     if (templates.length === 0) {
       openError.value = 'The booster contained no cards.'

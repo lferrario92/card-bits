@@ -187,7 +187,7 @@ export function useBattle(config: BattleConfig) {
     )
   }
 
-  function entityFor(target: CardEffect['target'], caster: Side): Entity {
+  function entityFor(target: CardEffect['target'], caster: Side): Entity | Entity[] {
     const selfEntity = entityForSide(caster)
     const opposingEntity = entityForSide(caster === 'player' ? 'opponent' : 'player')
     switch (target) {
@@ -199,6 +199,9 @@ export function useBattle(config: BattleConfig) {
       case 'player':
         // Absolute: the human player.
         return state.player
+      case 'all':
+        // Apply to both entities
+        return [state.player, state.opponent]
     }
   }
 
@@ -209,19 +212,25 @@ export function useBattle(config: BattleConfig) {
   // --- Effect resolution ---
   function resolveEffect(effect: CardEffect, caster: Side) {
     const target = entityFor(effect.target, caster)
-    switch (effect.action) {
-      case 'damage':
-        damage(target, effect.value)
-        log(`${target.name} — ${effect.value} damage`)
-        break
-      case 'heal':
-        heal(target, effect.value)
-        log(`${target.name} — +${effect.value} HP`)
-        break
-      case 'shield':
-        shield(target, effect.value)
-        log(`${target.name} — +${effect.value} shield`)
-        break
+
+    // Handle array of targets (for 'all')
+    const targets = Array.isArray(target) ? target : [target]
+
+    for (const t of targets) {
+      switch (effect.action) {
+        case 'damage':
+          damage(t, effect.value)
+          log(`${t.name} — ${effect.value} damage`)
+          break
+        case 'heal':
+          heal(t, effect.value)
+          log(`${t.name} — +${effect.value} HP`)
+          break
+        case 'shield':
+          shield(t, effect.value)
+          log(`${t.name} — +${effect.value} shield`)
+          break
+      }
     }
     checkOutcome()
   }

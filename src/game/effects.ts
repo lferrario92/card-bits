@@ -4,6 +4,7 @@ const TARGET_LABEL: Record<EffectTarget, string> = {
   opponent: 'the opponent',
   player: 'you',
   self: 'yourself',
+  all: 'all',
 }
 
 const ACTION_ICON: Record<EffectAction, string> = {

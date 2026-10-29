@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import type { CardTemplate, EffectTarget } from '@/game/types'
 
 const url = import.meta.env.VITE_SUPABASE_URL
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -26,6 +27,23 @@ export const supabase: SupabaseClient = createClient(url, anonKey, {
 })
 
 // ---------------------------------------------------------------------------
+// Card combat data types
+// ---------------------------------------------------------------------------
+
+export interface TcgCombatData {
+  type: 'spell' | 'creature'
+  manaCost: number
+  attack?: number
+  health?: number
+  charge?: boolean
+  effects: Array<{
+    target: EffectTarget
+    action: 'damage' | 'heal' | 'shield'
+    value: number
+  }>
+}
+
+// ---------------------------------------------------------------------------
 // Booster types
 // ---------------------------------------------------------------------------
 
@@ -45,6 +63,7 @@ export interface DbOpenedCard {
   rarity: string
   image: string | null
   description: string | null
+  tcg_combat_data: TcgCombatData | null
 }
 
 export interface OpenBoosterResult {
@@ -70,6 +89,7 @@ export interface DbUserCard {
     rarity: string
     description: string | null
     tcg_available: boolean
+    tcg_combat_data: TcgCombatData | null
   }
 }
 
@@ -131,7 +151,7 @@ export async function openBooster(
 export async function fetchUserCards(userId: string): Promise<DbUserCard[]> {
   const { data, error } = await supabase
     .from('user_cards')
-    .select('*, cards(tcg_available, image, name, rarity)')
+    .select('*, cards(tcg_available, image, name, rarity, tcg_combat_data)')
     .eq('user_id', userId)
 
   if (error) throw error
@@ -142,6 +162,27 @@ export async function fetchUserCards(userId: string): Promise<DbUserCard[]> {
   )
 
   return filteredData as DbUserCard[]
+}
+
+/**
+ * Helper function to convert a database card to a CardTemplate
+ * Extracts combat data from tcg_combat_data if available
+ */
+export function dbCardToTemplate(dbCard: DbOpenedCard | DbUserCard['cards']): CardTemplate {
+  const combatData = dbCard.tcg_combat_data
+
+  return {
+    title: dbCard.name,
+    image: dbCard.image ?? '',
+    description: dbCard.description ?? '',
+    type: combatData?.type ?? 'spell',
+    manaCost: combatData?.manaCost ?? 0,
+    attack: combatData?.attack,
+    health: combatData?.health,
+    rarity: dbCard.rarity ?? 'Common',
+    charge: combatData?.charge,
+    effects: combatData?.effects ?? []
+  }
 }
 
 
