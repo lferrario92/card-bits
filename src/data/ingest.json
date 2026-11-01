@@ -1,0 +1,719 @@
+[
+  {
+    "id": "39eae772-cfee-41ec-bbbe-868d00844bd3",
+    "name": "Barrera Absoluta",
+    "description": "Otorga un escudo defensivo sólido",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/achis/16.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 5,
+          "action": "shield",
+          "target": "self"
+        }
+      ],
+      "manaCost": 2
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-29T17:33:35.354122+00:00"
+  },
+  {
+    "id": "9c7de6bb-a308-418f-bf7e-5defe3920d25",
+    "name": "Bendición de Vida",
+    "description": "Curación masiva para estabilizar vida",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2025ext/gino_bk.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 6,
+          "action": "heal",
+          "target": "self"
+        }
+      ],
+      "manaCost": 3
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T04:30:31.014442+00:00"
+  },
+  {
+    "id": "e8d468b5-79f7-4d40-b17f-2ca3b9849a48",
+    "name": "Caballero Veterano",
+    "description": "Presencia fuerte en curva de turno 3",
+    "rarity": "Rare",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2025ext/kevin_king.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 3,
+      "charge": false,
+      "health": 4,
+      "effects": [],
+      "manaCost": 3
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T04:31:03.452547+00:00"
+  },
+  {
+    "id": "b24ea433-d4f4-4d9b-9279-5915f968e290",
+    "name": "Campeón de la Arena",
+    "description": "Unidad para intercambios favorables",
+    "rarity": "Rare",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/leyendas/main_char.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 4,
+      "charge": false,
+      "health": 5,
+      "effects": [],
+      "manaCost": 4
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:21:26.173154+00:00"
+  },
+  {
+    "id": "e6a2e71d-70bd-4f1d-a6a6-31b6faa3575f",
+    "name": "Catalizador de Enjambre",
+    "description": "Motor del combo de bajo coste",
+    "rarity": "Rare",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/gordona/contento.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 2,
+      "charge": false,
+      "health": 3,
+      "effects": [],
+      "manaCost": 3
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:21:46.211471+00:00"
+  },
+  {
+    "id": "e407a5ce-98a2-4225-874c-6c668eac57c3",
+    "name": "Célula Replicante",
+    "description": "Unidad que inunda el tablero",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/gordona/left.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 1,
+      "charge": false,
+      "health": 2,
+      "effects": [
+        {
+          "value": 1,
+          "action": "shield",
+          "target": "self"
+        }
+      ],
+      "manaCost": 2
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:22:01.797785+00:00"
+  },
+  {
+    "id": "2c3faf54-ebd8-42c8-b2ae-240157cca217",
+    "name": "Centinela de Piedra",
+    "description": "Bloqueador neutro de alta resistencia",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/decision/buena_decision.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 2,
+      "charge": false,
+      "health": 6,
+      "effects": [
+        {
+          "value": 1,
+          "action": "shield",
+          "target": "self"
+        }
+      ],
+      "manaCost": 4
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:23:14.180252+00:00"
+  },
+  {
+    "id": "337273ca-9d30-4fcf-9727-3fce71c2a010",
+    "name": "Chispa Incendiaria",
+    "description": "Daño directo al objetivo rival",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/achis/14.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 2,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 1
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:23:31.83475+00:00"
+  },
+  {
+    "id": "1312ed10-cee8-473d-8ff9-25d88a998df1",
+    "name": "Coloso de Piedra",
+    "description": "Muralla inamovible de juego tardío",
+    "rarity": "Epic",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/stickers/posta_crema.webp",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 5,
+      "charge": false,
+      "health": 8,
+      "effects": [
+        {
+          "value": 3,
+          "action": "shield",
+          "target": "self"
+        }
+      ],
+      "manaCost": 6
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:25:28.011148+00:00"
+  },
+  {
+    "id": "d30c5f14-bea4-4785-a102-9bca795b99fe",
+    "name": "Dragón Ancestral Neutral",
+    "description": "Gran amenaza neutra para cerrar partidas",
+    "rarity": "Legendary",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2026/posta_controversy.jpeg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 6,
+      "charge": false,
+      "health": 6,
+      "effects": [
+        {
+          "value": 3,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 6
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:26:51.818596+00:00"
+  },
+  {
+    "id": "17c10b3f-763d-4842-a574-935e00d1295f",
+    "name": "Dragón de Asedio",
+    "description": "Rematador devastador con impacto directo",
+    "rarity": "Legendary",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2025ext/posta_2013.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 7,
+      "charge": false,
+      "health": 7,
+      "effects": [
+        {
+          "value": 5,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 7
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:28:05.195263+00:00"
+  },
+  {
+    "id": "b6695e54-c32d-41b6-8276-02c06aeb6560",
+    "name": "Duende Asaltante",
+    "description": "Ataca de inmediato al entrar en juego",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/achis/8.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 2,
+      "charge": true,
+      "health": 1,
+      "effects": [
+        {
+          "value": 1,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 1
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:28:20.673306+00:00"
+  },
+  {
+    "id": "fc46f19f-816a-4473-954e-b593172fb842",
+    "name": "Elemental de Fuego",
+    "description": "Impacto inmediato al entrar al tablero",
+    "rarity": "Epic",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2025/gino_amazed.webp",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 5,
+      "charge": false,
+      "health": 5,
+      "effects": [
+        {
+          "value": 2,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 5
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:28:48.094932+00:00"
+  },
+  {
+    "id": "f3bdb11d-0964-42b4-8512-cada5769231e",
+    "name": "Enjambre Furioso",
+    "description": "Potencia la ofensiva combinada",
+    "rarity": "Rare",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/gordona/right.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 2,
+          "action": "damage",
+          "target": "opponent"
+        },
+        {
+          "value": 2,
+          "action": "heal",
+          "target": "self"
+        }
+      ],
+      "manaCost": 2
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:29:12.226255+00:00"
+  },
+  {
+    "id": "c6683487-963d-4d18-bd2f-e6f6ff3c398f",
+    "name": "Escudero Guardián",
+    "description": "Defensor resistente de juego temprano",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2026/sgt_kustin.jpeg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 1,
+      "charge": false,
+      "health": 4,
+      "effects": [
+        {
+          "value": 2,
+          "action": "shield",
+          "target": "self"
+        }
+      ],
+      "manaCost": 2
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:30:45.093575+00:00"
+  },
+  {
+    "id": "3e221f33-51e7-4c6d-89c1-70ce849792bf",
+    "name": "Escudo Mágico Neutral",
+    "description": "Escudo neutro rápido de protección",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2026/kevin_laburando.jpeg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 3,
+          "action": "shield",
+          "target": "self"
+        }
+      ],
+      "manaCost": 1
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:31:07.591881+00:00"
+  },
+  {
+    "id": "d3897f13-ed15-434f-bc88-b6792b169004",
+    "name": "Éxito Táctico",
+    "description": "Ventaja combinada de vida y recursos",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2026ext/rosarino editado.jpeg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 3,
+          "action": "heal",
+          "target": "self"
+        },
+        {
+          "value": 2,
+          "action": "shield",
+          "target": "self"
+        }
+      ],
+      "manaCost": 3
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:31:55.657502+00:00"
+  },
+  {
+    "id": "85a9eb63-ffb5-4b1e-b3ec-e3eeb8bbdf61",
+    "name": "Fisión de Átomos",
+    "description": "Hechizo de bajo coste para cadenas",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/achis/14.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 1,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 1
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:32:11.415296+00:00"
+  },
+  {
+    "id": "7f8d30dc-4eb4-4de9-8ab7-8de8be32527a",
+    "name": "Golpe Cero",
+    "description": "Daño masivo directo de remate",
+    "rarity": "Epic",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2025/mas_90mil.webp",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 5,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 3
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:32:47.565598+00:00"
+  },
+  {
+    "id": "08ef796f-3913-41f7-9e35-1c7ba6c8156e",
+    "name": "Guerrero Novato",
+    "description": "Unidad equilibrada de turno 1",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2025/pajero.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 1,
+      "charge": false,
+      "health": 3,
+      "effects": [],
+      "manaCost": 1
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:33:05.74369+00:00"
+  },
+  {
+    "id": "419ebae4-4380-4873-ac5c-571ce76c8ff5",
+    "name": "Mercenario Errante",
+    "description": "Criatura versátil para cualquier mazo",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/achis/5_bis.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 3,
+      "charge": false,
+      "health": 3,
+      "effects": [],
+      "manaCost": 3
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:33:53.910109+00:00"
+  },
+  {
+    "id": "40eee974-da17-4141-bf3a-6403249d6200",
+    "name": "Micro-Chispa",
+    "description": "Daño pequeño y recursivo para combos",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2025ext/burbujas.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 1,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 1
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:36:09.697826+00:00"
+  },
+  {
+    "id": "fc98f3bd-c300-4225-a61d-01eeef236046",
+    "name": "Ocurrencia Resonance",
+    "description": "Rematador por cantidad de jugadas",
+    "rarity": "Epic",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2026/santerk_viajero.jpeg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 2,
+      "charge": false,
+      "health": 2,
+      "effects": [
+        {
+          "value": 3,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 4
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:37:23.60776+00:00"
+  },
+  {
+    "id": "4bd36732-a9e5-44f4-9ce9-63f2102fb8de",
+    "name": "Oso de la Comarca",
+    "description": "Estadísticas sólidas para dominar mesa",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/arti_set/arti_uocra.jpeg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 2,
+      "charge": false,
+      "health": 3,
+      "effects": [],
+      "manaCost": 2
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:38:06.623949+00:00"
+  },
+  {
+    "id": "665f7fc4-77c5-42f5-8ed5-1696f635c461",
+    "name": "Poción de Curación Base",
+    "description": "Curación neutra básica comodín",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/achis/15.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 5,
+          "action": "heal",
+          "target": "self"
+        }
+      ],
+      "manaCost": 2
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:38:13.120766+00:00"
+  },
+  {
+    "id": "f939e065-ee26-48c9-8e10-6ee18d35db91",
+    "name": "Proyectil Arcano Neutral",
+    "description": "Daño directo comodín multipurpose",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2025ext/galbo_fumando.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 3,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 2
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:38:42.490641+00:00"
+  },
+  {
+    "id": "c661f33e-588c-4865-83af-b170b9cd50c5",
+    "name": "Purga de Fuego",
+    "description": "Limpieza de amenazas enemigas",
+    "rarity": "Rare",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/kelano/kelano_vino_gun.webp",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 4,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 4
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:39:36.933645+00:00"
+  },
+  {
+    "id": "4c87b200-525f-47b5-b2eb-8ff1ec8e2d91",
+    "name": "Ráfaga Lacerante",
+    "description": "Daña al rival a cambio de vida propia",
+    "rarity": "Common",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2025/santerk_drunk.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "spell",
+      "attack": 0,
+      "charge": true,
+      "health": 0,
+      "effects": [
+        {
+          "value": 4,
+          "action": "damage",
+          "target": "opponent"
+        },
+        {
+          "value": 1,
+          "action": "damage",
+          "target": "self"
+        }
+      ],
+      "manaCost": 2
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:40:00.613946+00:00"
+  },
+  {
+    "id": "70446742-e0dc-4546-976e-744daad12022",
+    "name": "Sabueso Furioso",
+    "description": "Agresivo de bajo coste para presionar",
+    "rarity": "Rare",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2026/water_kevin.jpeg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 3,
+      "charge": false,
+      "health": 2,
+      "effects": [],
+      "manaCost": 2
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:41:15.402404+00:00"
+  },
+  {
+    "id": "36860609-a44c-4317-a46e-ee49716a8f27",
+    "name": "Tirador de Vanguardia",
+    "description": "Gran potencia de ataque inicial",
+    "rarity": "Rare",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2026ext/music_posta.jpeg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 4,
+      "charge": false,
+      "health": 2,
+      "effects": [],
+      "manaCost": 3
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-10-30T18:41:51.629172+00:00"
+  }
+]

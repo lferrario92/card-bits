@@ -1,0 +1,31 @@
+Name,Archetype,Type,Mana Cost,Attack,Health,Charge,Rarity,Main Set,Description,Image URL,Effects JSON
+Duende Asaltante,Aggro,creature,1,2,1,TRUE,Common,tcg_base_2026,Ataca de inmediato al entrar en juego,card_duende_asaltante.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":1}]"
+Chispa Incendiaria,Aggro,spell,1,0,0,TRUE,Common,tcg_base_2026,Daño directo al objetivo rival,card_chispa_incendiaria.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":2}]"
+Sabueso Furioso,Aggro,creature,2,3,2,FALSE,Rare,tcg_base_2026,Agresivo de bajo coste para presionar,card_sabueso_furioso.jpg,[]
+Ráfaga Lacerante,Aggro,spell,2,0,0,TRUE,Common,tcg_base_2026,Daña al rival a cambio de vida propia,card_rafaga_lacerante.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":4},{""target"":""self"",""action"":""damage"",""value"":1}]"
+Tirador de Vanguardia,Aggro,creature,3,4,2,FALSE,Rare,tcg_base_2026,Gran potencia de ataque inicial,card_tirador_vanguardia.jpg,[]
+Golpe Cero,Aggro,spell,3,0,0,TRUE,Epic,tcg_base_2026,Daño masivo directo de remate,card_golpe_cero.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":5}]"
+Escudero Guardián,Control,creature,2,1,4,FALSE,Common,tcg_base_2026,Defensor resistente de juego temprano,card_escudero_guardian.jpg,"[{""target"":""self"",""action"":""shield"",""value"":2}]"
+Barrera Absoluta,Control,spell,2,0,0,TRUE,Common,tcg_base_2026,Otorga un escudo defensivo sólido,card_barrera_absoluta.jpg,"[{""target"":""self"",""action"":""shield"",""value"":5}]"
+Purga de Fuego,Control,spell,4,0,0,TRUE,Rare,tcg_base_2026,Limpieza de amenazas enemigas,card_purga_fuego.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":4}]"
+Bendición de Vida,Control,spell,3,0,0,TRUE,Common,tcg_base_2026,Curación masiva para estabilizar vida,card_bendicion_vida.jpg,"[{""target"":""self"",""action"":""heal"",""value"":6}]"
+Coloso de Piedra,Control,creature,6,5,8,FALSE,Epic,tcg_base_2026,Muralla inamovible de juego tardío,card_coloso_piedra.jpg,"[{""target"":""self"",""action"":""shield"",""value"":3}]"
+Dragón de Asedio,Control,creature,7,7,7,FALSE,Legendary,tcg_base_2026,Rematador devastador con impacto directo,card_dragon_asedio.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":5}]"
+Guerrero Novato,Midrange,creature,1,1,3,FALSE,Common,tcg_base_2026,Unidad equilibrada de turno 1,card_guerrero_novato.jpg,[]
+Oso de la Comarca,Midrange,creature,2,2,3,FALSE,Common,tcg_base_2026,Estadísticas sólidas para dominar mesa,card_oso_comarca.jpg,[]
+Caballero Veterano,Midrange,creature,3,3,4,FALSE,Rare,tcg_base_2026,Presencia fuerte en curva de turno 3,card_caballero_veterano.jpg,[]
+Campeón de la Arena,Midrange,creature,4,4,5,FALSE,Rare,tcg_base_2026,Unidad para intercambios favorables,card_campeon_arena.jpg,[]
+Éxito Táctico,Midrange,spell,3,0,0,TRUE,Common,tcg_base_2026,Ventaja combinada de vida y recursos,card_exito_tactico.jpg,"[{""target"":""self"",""action"":""heal"",""value"":3},{""target"":""self"",""action"":""shield"",""value"":2}]"
+Elemental de Fuego,Midrange,creature,5,5,5,FALSE,Epic,tcg_base_2026,Impacto inmediato al entrar al tablero,card_elemental_fuego.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":2}]"
+Célula Replicante,Swarm/Combo,creature,2,1,2,FALSE,Common,tcg_base_2026,Unidad que inunda el tablero,card_celula_replicante.jpg,"[{""target"":""self"",""action"":""shield"",""value"":1}]"
+Fisión de Átomos,Swarm/Combo,spell,1,0,0,TRUE,Common,tcg_base_2026,Hechizo de bajo coste para cadenas,card_fision_atomos.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":1}]"
+Catalizador de Enjambre,Swarm/Combo,creature,3,2,3,FALSE,Rare,tcg_base_2026,Motor del combo de bajo coste,card_catalizador_enjambre.jpg,[]
+Micro-Chispa,Swarm/Combo,spell,1,0,0,TRUE,Common,tcg_base_2026,Daño pequeño y recursivo para combos,card_micro_chispa.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":1}]"
+Ocurrencia Resonance,Swarm/Combo,creature,4,2,2,FALSE,Epic,tcg_base_2026,Rematador por cantidad de jugadas,card_ocurrencia_resonance.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":3}]"
+Enjambre Furioso,Swarm/Combo,spell,2,0,0,TRUE,Rare,tcg_base_2026,Potencia la ofensiva combinada,card_enjambre_furioso.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":2},{""target"":""self"",""action"":""heal"",""value"":2}]"
+Poción de Curación Base,Core Neutral,spell,2,0,0,TRUE,Common,tcg_base_2026,Curación neutra básica comodín,card_pocion_curacion_base.jpg,"[{""target"":""self"",""action"":""heal"",""value"":5}]"
+Escudo Mágico Neutral,Core Neutral,spell,1,0,0,TRUE,Common,tcg_base_2026,Escudo neutro rápido de protección,card_escudo_magico_neutral.jpg,"[{""target"":""self"",""action"":""shield"",""value"":3}]"
+Mercenario Errante,Core Neutral,creature,3,3,3,FALSE,Common,tcg_base_2026,Criatura versátil para cualquier mazo,card_mercenario_errante.jpg,[]
+Proyectil Arcano Neutral,Core Neutral,spell,2,0,0,TRUE,Common,tcg_base_2026,Daño directo comodín multipurpose,card_proyectil_arcano_neutral.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":3}]"
+Centinela de Piedra,Core Neutral,creature,4,2,6,FALSE,Common,tcg_base_2026,Bloqueador neutro de alta resistencia,card_centinela_piedra.jpg,"[{""target"":""self"",""action"":""shield"",""value"":1}]"
+Dragón Ancestral Neutral,Core Neutral,creature,6,6,6,FALSE,Legendary,tcg_base_2026,Gran amenaza neutra para cerrar partidas,card_dragon_ancestral_neutral.jpg,"[{""target"":""opponent"",""action"":""damage"",""value"":3}]"

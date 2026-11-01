@@ -9,6 +9,8 @@ export interface Deck {
 
 /** Maximum copies of a single card allowed in a deck. */
 export const MAX_COPIES = 2
+/** Minimum total cards allowed in a deck. */
+export const MIN_CARDS = 10
 /** Maximum total cards allowed in a deck. */
 export const MAX_CARDS = 15
 

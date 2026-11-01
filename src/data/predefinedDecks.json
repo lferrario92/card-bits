@@ -1,0 +1,684 @@
+[
+  {
+    "id": "aggro-strike",
+    "name": "Aggro Strike",
+    "description": "Fast-paced aggressive deck focused on quick damage",
+    "cards": [
+      {
+        "name": "Duende Asaltante",
+        "image": "/assets/local_cards/achis/8.jpg",
+        "type": "creature",
+        "manaCost": 1,
+        "attack": 2,
+        "health": 1,
+        "charge": true,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "name": "Chispa Incendiaria",
+        "image": "/assets/local_cards/achis/14.jpg",
+        "type": "spell",
+        "manaCost": 1,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "name": "Sabueso Furioso",
+        "image": "/assets/local_cards/base2026/water_kevin.jpeg",
+        "type": "creature",
+        "manaCost": 2,
+        "attack": 3,
+        "health": 2,
+        "effects": []
+      },
+      {
+        "name": "Ráfaga Lacerante",
+        "image": "/assets/local_cards/base2025/santerk_drunk.jpg",
+        "type": "spell",
+        "manaCost": 2,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 4
+          },
+          {
+            "target": "self",
+            "action": "damage",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "name": "Tirador de Vanguardia",
+        "image": "/assets/local_cards/base2026ext/music_posta.jpeg",
+        "type": "creature",
+        "manaCost": 3,
+        "attack": 4,
+        "health": 2,
+        "effects": []
+      },
+      {
+        "name": "Golpe Cero",
+        "image": "/assets/local_cards/base2025/mas_90mil.webp",
+        "type": "spell",
+        "manaCost": 3,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "name": "Sabueso Furioso",
+        "image": "/assets/local_cards/base2026/water_kevin.jpeg",
+        "type": "creature",
+        "manaCost": 2,
+        "attack": 3,
+        "health": 2,
+        "effects": []
+      },
+      {
+        "name": "Chispa Incendiaria",
+        "image": "/assets/local_cards/achis/14.jpg",
+        "type": "spell",
+        "manaCost": 1,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "name": "Duende Asaltante",
+        "image": "/assets/local_cards/achis/8.jpg",
+        "type": "creature",
+        "manaCost": 1,
+        "attack": 2,
+        "health": 1,
+        "charge": true,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "name": "Ráfaga Lacerante",
+        "image": "/assets/local_cards/base2025/santerk_drunk.jpg",
+        "type": "spell",
+        "manaCost": 2,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 4
+          },
+          {
+            "target": "self",
+            "action": "damage",
+            "value": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "control-fortress",
+    "name": "Control Fortress",
+    "description": "Defensive deck with shields and healing to outlast opponents",
+    "cards": [
+      {
+        "name": "Escudero Guardián",
+        "image": "/assets/local_cards/base2026/sgt_kustin.jpeg",
+        "type": "creature",
+        "manaCost": 2,
+        "attack": 1,
+        "health": 4,
+        "effects": [
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "name": "Barrera Absoluta",
+        "image": "/assets/local_cards/achis/16.jpg",
+        "type": "spell",
+        "manaCost": 2,
+        "effects": [
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "name": "Bendición de Vida",
+        "image": "/assets/local_cards/base2025ext/gino_bk.jpg",
+        "type": "spell",
+        "manaCost": 3,
+        "effects": [
+          {
+            "target": "self",
+            "action": "heal",
+            "value": 6
+          }
+        ]
+      },
+      {
+        "name": "Purga de Fuego",
+        "image": "/assets/local_cards/kelano/kelano_vino_gun.webp",
+        "type": "spell",
+        "manaCost": 4,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 4
+          }
+        ]
+      },
+      {
+        "name": "Coloso de Piedra",
+        "image": "/assets/local_cards/stickers/posta_crema.webp",
+        "type": "creature",
+        "manaCost": 6,
+        "attack": 5,
+        "health": 8,
+        "effects": [
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "name": "Dragón de Asedio",
+        "image": "/assets/local_cards/base2025ext/posta_2013.jpg",
+        "type": "creature",
+        "manaCost": 7,
+        "attack": 7,
+        "health": 7,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "name": "Escudero Guardián",
+        "image": "/assets/local_cards/base2026/sgt_kustin.jpeg",
+        "type": "creature",
+        "manaCost": 2,
+        "attack": 1,
+        "health": 4,
+        "effects": [
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "name": "Barrera Absoluta",
+        "image": "/assets/local_cards/achis/16.jpg",
+        "type": "spell",
+        "manaCost": 2,
+        "effects": [
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "name": "Bendición de Vida",
+        "image": "/assets/local_cards/base2025ext/gino_bk.jpg",
+        "type": "spell",
+        "manaCost": 3,
+        "effects": [
+          {
+            "target": "self",
+            "action": "heal",
+            "value": 6
+          }
+        ]
+      },
+      {
+        "name": "Coloso de Piedra",
+        "image": "/assets/local_cards/stickers/posta_crema.webp",
+        "type": "creature",
+        "manaCost": 6,
+        "attack": 5,
+        "health": 8,
+        "effects": [
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "midrange-balance",
+    "name": "Midrange Balance",
+    "description": "Balanced deck with solid creatures and tactical plays",
+    "cards": [
+      {
+        "name": "Guerrero Novato",
+        "image": "/assets/local_cards/base2025/pajero.jpg",
+        "type": "creature",
+        "manaCost": 1,
+        "attack": 1,
+        "health": 3,
+        "effects": []
+      },
+      {
+        "name": "Oso de la Comarca",
+        "image": "/assets/local_cards/arti_set/arti_uocra.jpeg",
+        "type": "creature",
+        "manaCost": 2,
+        "attack": 2,
+        "health": 3,
+        "effects": []
+      },
+      {
+        "name": "Caballero Veterano",
+        "image": "/assets/local_cards/base2025ext/kevin_king.jpg",
+        "type": "creature",
+        "manaCost": 3,
+        "attack": 3,
+        "health": 4,
+        "effects": []
+      },
+      {
+        "name": "Campeón de la Arena",
+        "image": "/assets/local_cards/leyendas/main_char.jpg",
+        "type": "creature",
+        "manaCost": 4,
+        "attack": 4,
+        "health": 5,
+        "effects": []
+      },
+      {
+        "name": "Éxito Táctico",
+        "image": "/assets/local_cards/base2026ext/rosarino editado.jpeg",
+        "type": "spell",
+        "manaCost": 3,
+        "effects": [
+          {
+            "target": "self",
+            "action": "heal",
+            "value": 3
+          },
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "name": "Elemental de Fuego",
+        "image": "/assets/local_cards/base2025/gino_amazed.webp",
+        "type": "creature",
+        "manaCost": 5,
+        "attack": 5,
+        "health": 5,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "name": "Oso de la Comarca",
+        "image": "/assets/local_cards/arti_set/arti_uocra.jpeg",
+        "type": "creature",
+        "manaCost": 2,
+        "attack": 2,
+        "health": 3,
+        "effects": []
+      },
+      {
+        "name": "Caballero Veterano",
+        "image": "/assets/local_cards/base2025ext/kevin_king.jpg",
+        "type": "creature",
+        "manaCost": 3,
+        "attack": 3,
+        "health": 4,
+        "effects": []
+      },
+      {
+        "name": "Éxito Táctico",
+        "image": "/assets/local_cards/base2026ext/rosarino editado.jpeg",
+        "type": "spell",
+        "manaCost": 3,
+        "effects": [
+          {
+            "target": "self",
+            "action": "heal",
+            "value": 3
+          },
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "name": "Guerrero Novato",
+        "image": "/assets/local_cards/base2025/pajero.jpg",
+        "type": "creature",
+        "manaCost": 1,
+        "attack": 1,
+        "health": 3,
+        "effects": []
+      }
+    ]
+  },
+  {
+    "id": "swarm-combo",
+    "name": "Swarm Combo",
+    "description": "Combo-focused deck with small synergistic plays",
+    "cards": [
+      {
+        "name": "Célula Replicante",
+        "image": "/assets/local_cards/gordona/left.jpg",
+        "type": "creature",
+        "manaCost": 2,
+        "attack": 1,
+        "health": 2,
+        "effects": [
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "name": "Fisión de Átomos",
+        "image": "/assets/local_cards/achis/14.jpg",
+        "type": "spell",
+        "manaCost": 1,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "name": "Catalizador de Enjambre",
+        "image": "/assets/local_cards/gordona/contento.jpg",
+        "type": "creature",
+        "manaCost": 3,
+        "attack": 2,
+        "health": 3,
+        "effects": []
+      },
+      {
+        "name": "Micro-Chispa",
+        "image": "/assets/local_cards/base2025ext/burbujas.jpg",
+        "type": "spell",
+        "manaCost": 1,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "name": "Ocurrencia Resonance",
+        "image": "/assets/local_cards/base2026/santerk_viajero.jpeg",
+        "type": "creature",
+        "manaCost": 4,
+        "attack": 2,
+        "health": 2,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "name": "Enjambre Furioso",
+        "image": "/assets/local_cards/gordona/right.jpg",
+        "type": "spell",
+        "manaCost": 2,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 2
+          },
+          {
+            "target": "self",
+            "action": "heal",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "name": "Fisión de Átomos",
+        "image": "/assets/local_cards/achis/14.jpg",
+        "type": "spell",
+        "manaCost": 1,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "name": "Micro-Chispa",
+        "image": "/assets/local_cards/base2025ext/burbujas.jpg",
+        "type": "spell",
+        "manaCost": 1,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "name": "Célula Replicante",
+        "image": "/assets/local_cards/gordona/left.jpg",
+        "type": "creature",
+        "manaCost": 2,
+        "attack": 1,
+        "health": 2,
+        "effects": [
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "name": "Catalizador de Enjambre",
+        "image": "/assets/local_cards/gordona/contento.jpg",
+        "type": "creature",
+        "manaCost": 3,
+        "attack": 2,
+        "health": 3,
+        "effects": []
+      }
+    ]
+  },
+  {
+    "id": "neutral-core",
+    "name": "Neutral Core",
+    "description": "Versatile neutral deck with balanced options",
+    "cards": [
+      {
+        "name": "Poción de Curación Base",
+        "image": "/assets/local_cards/achis/15.jpg",
+        "type": "spell",
+        "manaCost": 2,
+        "effects": [
+          {
+            "target": "self",
+            "action": "heal",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "name": "Escudo Mágico Neutral",
+        "image": "/assets/local_cards/base2026/kevin_laburando.jpeg",
+        "type": "spell",
+        "manaCost": 1,
+        "effects": [
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "name": "Mercenario Errante",
+        "image": "/assets/local_cards/achis/5_bis.jpg",
+        "type": "creature",
+        "manaCost": 3,
+        "attack": 3,
+        "health": 3,
+        "effects": []
+      },
+      {
+        "name": "Proyectil Arcano Neutral",
+        "image": "/assets/local_cards/base2025ext/galbo_fumando.jpg",
+        "type": "spell",
+        "manaCost": 2,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "name": "Centinela de Piedra",
+        "image": "/assets/local_cards/decision/buena_decision.jpg",
+        "type": "creature",
+        "manaCost": 4,
+        "attack": 2,
+        "health": 6,
+        "effects": [
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "name": "Dragón Ancestral Neutral",
+        "image": "/assets/local_cards/base2026/posta_controversy.jpeg",
+        "type": "creature",
+        "manaCost": 6,
+        "attack": 6,
+        "health": 6,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "name": "Escudo Mágico Neutral",
+        "image": "/assets/local_cards/base2026/kevin_laburando.jpeg",
+        "type": "spell",
+        "manaCost": 1,
+        "effects": [
+          {
+            "target": "self",
+            "action": "shield",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "name": "Mercenario Errante",
+        "image": "/assets/local_cards/achis/5_bis.jpg",
+        "type": "creature",
+        "manaCost": 3,
+        "attack": 3,
+        "health": 3,
+        "effects": []
+      },
+      {
+        "name": "Proyectil Arcano Neutral",
+        "image": "/assets/local_cards/base2025ext/galbo_fumando.jpg",
+        "type": "spell",
+        "manaCost": 2,
+        "effects": [
+          {
+            "target": "opponent",
+            "action": "damage",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "name": "Poción de Curación Base",
+        "image": "/assets/local_cards/achis/15.jpg",
+        "type": "spell",
+        "manaCost": 2,
+        "effects": [
+          {
+            "target": "self",
+            "action": "heal",
+            "value": 5
+          }
+        ]
+      }
+    ]
+  }
+]

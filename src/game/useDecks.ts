@@ -3,6 +3,7 @@ import type { CardTemplate } from './types'
 import {
   type Deck,
   MAX_CARDS,
+  MIN_CARDS,
   MAX_COPIES,
   cardKey,
   createDefaultDeck,
@@ -106,6 +107,15 @@ export function useDecks() {
     return true
   }
 
+  function isValidDeck(deck: Deck): boolean {
+    return deck.cards.length >= MIN_CARDS && deck.cards.length <= MAX_CARDS
+  }
+
+  function canUseDeck(deck: Deck, userCards: CardTemplate[]): boolean {
+    const userCardKeys = new Set(userCards.map(cardKey))
+    return deck.cards.every(card => userCardKeys.has(cardKey(card)))
+  }
+
   return {
     decks,
     currentDeckId,
@@ -119,6 +129,9 @@ export function useDecks() {
     addCard,
     removeCard,
     MAX_CARDS,
+    MIN_CARDS,
     MAX_COPIES,
+    canUseDeck,
+    isValidDeck,
   }
 }
