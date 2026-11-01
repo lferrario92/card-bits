@@ -22,7 +22,7 @@ const { currentDeck, currentDeckTemplates } = useDecks()
 // starter deck when the current deck has no cards yet).
 const playerDeck: LocalDeck = (() => {
   const current = currentDeckTemplates()
-  return { templates: current.length > 0 ? current : [...STARTER_CARDS], name: currentDeck?.name ?? 'Starter Deck' }
+  return { templates: current.length > 0 ? current : [...STARTER_CARDS], name: currentDeck.value?.name ?? 'Starter Deck' }
 })()
 
 // --- Mode: online (PvP) when the lobby handed us a code, else VS AI ---

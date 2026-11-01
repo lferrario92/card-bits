@@ -35,6 +35,10 @@ const cardsError = ref('')
 // View mode: 'menu' | 'predefined' | 'custom'
 const viewMode = ref<'menu' | 'predefined' | 'custom'>('menu')
 
+// Card modal state
+const selectedCard = ref<any>(null)
+const cardModalOpen = ref(false)
+
 // Convert user cards to CardTemplate for deck building
 const pool = computed(() => {
   return userCards.value.map(dbCard => dbCardToTemplate(dbCard.cards))
@@ -72,13 +76,13 @@ const deckGroups = computed<{ card: CardTemplate; count: number }[]>(() => {
 })
 
 // Check if user has all cards for a predefined deck
-function hasAllCards(deckCards: CardTemplate[]): boolean {
+function hasAllCards(deckCards: any[]): boolean {
   const userCardNames = new Set(pool.value.map(c => c.title))
   return deckCards.every(card => userCardNames.has(card.name))
 }
 
 // Check if specific card is owned
-function hasCard(card: CardTemplate): boolean {
+function hasCard(card: any): boolean {
   return pool.value.some(c => c.title === card.name)
 }
 
@@ -162,6 +166,16 @@ function usePredefinedDeck(deck: any) {
   editingId.value = newDeck.id
   nameInput.value = newDeck.name
 }
+
+function openCardModal(card: any) {
+  selectedCard.value = card
+  cardModalOpen.value = true
+}
+
+function closeCardModal() {
+  selectedCard.value = null
+  cardModalOpen.value = false
+}
 </script>
 
 <template>
@@ -211,14 +225,15 @@ function usePredefinedDeck(deck: any) {
 
             <!-- Deck cards grid -->
             <div class="grid grid-cols-5 gap-2 mb-3">
-              <div
+              <button
                 v-for="(card, idx) in deck.cards"
                 :key="idx"
-                class="aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900"
+                @click="openCardModal(card)"
+                class="aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 relative"
                 :class="hasCard(card) ? '' : 'grayscale opacity-50'"
               >
                 <img :src="card.image" :alt="card.name" class="w-full h-full object-cover" />
-              </div>
+              </button>
             </div>
 
             <button
@@ -405,6 +420,43 @@ function usePredefinedDeck(deck: any) {
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- Card Detail Modal -->
+  <div v-if="cardModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click="closeCardModal">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full mx-4 overflow-hidden shadow-2xl" @click.stop>
+      <div class="relative">
+        <img :src="selectedCard?.image" :alt="selectedCard?.name" class="w-full h-64 object-cover" />
+        <button @click="closeCardModal" class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-black/60 text-white text-lg font-bold">✕</button>
+        <div class="absolute top-2 left-2 px-3 py-1 rounded-full bg-blue-500 text-white text-xs font-bold border border-white/20">
+          {{ selectedCard?.manaCost }} mana
+        </div>
+      </div>
+      <div class="p-4">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">{{ selectedCard?.name }}</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ selectedCard?.type }}</p>
+
+        <div v-if="selectedCard?.type === 'creature'" class="flex items-center gap-4 mb-3">
+          <span class="text-red-400 font-bold">🗡 {{ selectedCard?.attack }}</span>
+          <span class="text-green-400 font-bold">❤ {{ selectedCard?.health }}</span>
+          <span v-if="selectedCard?.charge" class="text-yellow-400 font-bold">⚡ Charge</span>
+        </div>
+
+        <div v-if="selectedCard?.effects && selectedCard.effects.length > 0" class="mb-4">
+          <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Effects:</h4>
+          <div class="space-y-1">
+            <div v-for="(effect, idx) in selectedCard.effects" :key="idx" class="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded px-3 py-2">
+              {{ effect.action }} {{ effect.value }} to {{ effect.target === 'all' ? 'all' : effect.target }}
+            </div>
+          </div>
+        </div>
+
+        <div v-if="!hasCard(selectedCard)" class="mt-4 p-3 bg-amber-100 dark:bg-amber-900/30 rounded-lg border border-amber-300 dark:border-amber-700">
+          <p class="text-sm text-amber-800 dark:text-amber-200 font-semibold">⚠️ You don't own this card yet</p>
+          <p class="text-xs text-amber-700 dark:text-amber-300 mt-1">Open boosters to collect it!</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <style scoped>
