@@ -18,11 +18,12 @@
             "action": "damage",
             "value": 1
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Chispa Incendiaria",
-        "image": "/assets/local_cards/achis/14.jpg",
+        "image": "/assets/local_cards/base2026/rayo_heterosexualizador.jpg",
         "type": "spell",
         "manaCost": 1,
         "effects": [
@@ -31,7 +32,8 @@
             "action": "damage",
             "value": 2
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Sabueso Furioso",
@@ -40,7 +42,8 @@
         "manaCost": 2,
         "attack": 3,
         "health": 2,
-        "effects": []
+        "effects": [],
+        "rarity": "Rare"
       },
       {
         "name": "Ráfaga Lacerante",
@@ -58,7 +61,8 @@
             "action": "damage",
             "value": 1
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Tirador de Vanguardia",
@@ -67,7 +71,8 @@
         "manaCost": 3,
         "attack": 4,
         "health": 2,
-        "effects": []
+        "effects": [],
+        "rarity": "Rare"
       },
       {
         "name": "Golpe Cero",
@@ -80,7 +85,8 @@
             "action": "damage",
             "value": 5
           }
-        ]
+        ],
+        "rarity": "Epic"
       },
       {
         "name": "Sabueso Furioso",
@@ -89,11 +95,12 @@
         "manaCost": 2,
         "attack": 3,
         "health": 2,
-        "effects": []
+        "effects": [],
+        "rarity": "Rare"
       },
       {
         "name": "Chispa Incendiaria",
-        "image": "/assets/local_cards/achis/14.jpg",
+        "image": "/assets/local_cards/base2026/rayo_heterosexualizador.jpg",
         "type": "spell",
         "manaCost": 1,
         "effects": [
@@ -102,7 +109,8 @@
             "action": "damage",
             "value": 2
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Duende Asaltante",
@@ -118,7 +126,8 @@
             "action": "damage",
             "value": 1
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Ráfaga Lacerante",
@@ -136,7 +145,8 @@
             "action": "damage",
             "value": 1
           }
-        ]
+        ],
+        "rarity": "Common"
       }
     ]
   },
@@ -158,7 +168,8 @@
             "action": "shield",
             "value": 2
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Barrera Absoluta",
@@ -171,7 +182,8 @@
             "action": "shield",
             "value": 5
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Bendición de Vida",
@@ -184,7 +196,8 @@
             "action": "heal",
             "value": 6
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Purga de Fuego",
@@ -197,7 +210,8 @@
             "action": "damage",
             "value": 4
           }
-        ]
+        ],
+        "rarity": "Rare"
       },
       {
         "name": "Coloso de Piedra",
@@ -212,7 +226,8 @@
             "action": "shield",
             "value": 3
           }
-        ]
+        ],
+        "rarity": "Epic"
       },
       {
         "name": "Dragón de Asedio",
@@ -227,7 +242,8 @@
             "action": "damage",
             "value": 5
           }
-        ]
+        ],
+        "rarity": "Legendary"
       },
       {
         "name": "Escudero Guardián",
@@ -242,7 +258,8 @@
             "action": "shield",
             "value": 2
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Barrera Absoluta",
@@ -255,7 +272,8 @@
             "action": "shield",
             "value": 5
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Bendición de Vida",
@@ -268,7 +286,8 @@
             "action": "heal",
             "value": 6
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Coloso de Piedra",
@@ -283,7 +302,8 @@
             "action": "shield",
             "value": 3
           }
-        ]
+        ],
+        "rarity": "Epic"
       }
     ]
   },
@@ -299,7 +319,8 @@
         "manaCost": 1,
         "attack": 1,
         "health": 3,
-        "effects": []
+        "effects": [],
+        "rarity": "Common"
       },
       {
         "name": "Oso de la Comarca",
@@ -308,7 +329,8 @@
         "manaCost": 2,
         "attack": 2,
         "health": 3,
-        "effects": []
+        "effects": [],
+        "rarity": "Common"
       },
       {
         "name": "Caballero Veterano",
@@ -317,7 +339,8 @@
         "manaCost": 3,
         "attack": 3,
         "health": 4,
-        "effects": []
+        "effects": [],
+        "rarity": "Rare"
       },
       {
         "name": "Campeón de la Arena",
@@ -326,7 +349,8 @@
         "manaCost": 4,
         "attack": 4,
         "health": 5,
-        "effects": []
+        "effects": [],
+        "rarity": "Rare"
       },
       {
         "name": "Éxito Táctico",
@@ -344,7 +368,8 @@
             "action": "shield",
             "value": 2
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Elemental de Fuego",
@@ -359,7 +384,8 @@
             "action": "damage",
             "value": 2
           }
-        ]
+        ],
+        "rarity": "Epic"
       },
       {
         "name": "Oso de la Comarca",
@@ -368,7 +394,8 @@
         "manaCost": 2,
         "attack": 2,
         "health": 3,
-        "effects": []
+        "effects": [],
+        "rarity": "Common"
       },
       {
         "name": "Caballero Veterano",
@@ -377,7 +404,8 @@
         "manaCost": 3,
         "attack": 3,
         "health": 4,
-        "effects": []
+        "effects": [],
+        "rarity": "Rare"
       },
       {
         "name": "Éxito Táctico",
@@ -395,7 +423,8 @@
             "action": "shield",
             "value": 2
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Guerrero Novato",
@@ -404,7 +433,8 @@
         "manaCost": 1,
         "attack": 1,
         "health": 3,
-        "effects": []
+        "effects": [],
+        "rarity": "Common"
       }
     ]
   },
@@ -423,10 +453,11 @@
         "effects": [
           {
             "target": "self",
-            "action": "shield",
+            "action": "summon",
             "value": 1
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Fisión de Átomos",
@@ -438,8 +469,14 @@
             "target": "opponent",
             "action": "damage",
             "value": 1
+          },
+          {
+            "target": "self",
+            "action": "add_copy",
+            "value": 1
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Catalizador de Enjambre",
@@ -448,7 +485,8 @@
         "manaCost": 3,
         "attack": 2,
         "health": 3,
-        "effects": []
+        "effects": [],
+        "rarity": "Rare"
       },
       {
         "name": "Micro-Chispa",
@@ -461,7 +499,8 @@
             "action": "damage",
             "value": 1
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Ocurrencia Resonance",
@@ -474,9 +513,11 @@
           {
             "target": "opponent",
             "action": "damage",
-            "value": 3
+            "value": 1,
+            "scaleBy": "cardsPlayedThisTurn"
           }
-        ]
+        ],
+        "rarity": "Epic"
       },
       {
         "name": "Enjambre Furioso",
@@ -494,7 +535,8 @@
             "action": "heal",
             "value": 2
           }
-        ]
+        ],
+        "rarity": "Rare"
       },
       {
         "name": "Fisión de Átomos",
@@ -506,8 +548,14 @@
             "target": "opponent",
             "action": "damage",
             "value": 1
+          },
+          {
+            "target": "self",
+            "action": "add_copy",
+            "value": 1
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Micro-Chispa",
@@ -520,7 +568,8 @@
             "action": "damage",
             "value": 1
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Célula Replicante",
@@ -532,10 +581,11 @@
         "effects": [
           {
             "target": "self",
-            "action": "shield",
+            "action": "summon",
             "value": 1
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Catalizador de Enjambre",
@@ -544,7 +594,8 @@
         "manaCost": 3,
         "attack": 2,
         "health": 3,
-        "effects": []
+        "effects": [],
+        "rarity": "Rare"
       }
     ]
   },
@@ -564,7 +615,8 @@
             "action": "heal",
             "value": 5
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Escudo Mágico Neutral",
@@ -577,7 +629,8 @@
             "action": "shield",
             "value": 3
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Mercenario Errante",
@@ -586,7 +639,8 @@
         "manaCost": 3,
         "attack": 3,
         "health": 3,
-        "effects": []
+        "effects": [],
+        "rarity": "Common"
       },
       {
         "name": "Proyectil Arcano Neutral",
@@ -599,7 +653,8 @@
             "action": "damage",
             "value": 3
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Centinela de Piedra",
@@ -614,7 +669,8 @@
             "action": "shield",
             "value": 1
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Dragón Ancestral Neutral",
@@ -629,7 +685,8 @@
             "action": "damage",
             "value": 3
           }
-        ]
+        ],
+        "rarity": "Legendary"
       },
       {
         "name": "Escudo Mágico Neutral",
@@ -642,7 +699,8 @@
             "action": "shield",
             "value": 3
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Mercenario Errante",
@@ -651,7 +709,8 @@
         "manaCost": 3,
         "attack": 3,
         "health": 3,
-        "effects": []
+        "effects": [],
+        "rarity": "Common"
       },
       {
         "name": "Proyectil Arcano Neutral",
@@ -664,7 +723,8 @@
             "action": "damage",
             "value": 3
           }
-        ]
+        ],
+        "rarity": "Common"
       },
       {
         "name": "Poción de Curación Base",
@@ -677,7 +737,8 @@
             "action": "heal",
             "value": 5
           }
-        ]
+        ],
+        "rarity": "Common"
       }
     ]
   }

@@ -38,8 +38,11 @@ export interface TcgCombatData {
   charge?: boolean
   effects: Array<{
     target: EffectTarget
-    action: 'damage' | 'heal' | 'shield'
+    action: 'damage' | 'heal' | 'shield' | 'summon' | 'add_copy' | 'draw' | 'buff_board'
     value: number
+    scaleBy?: 'cardsPlayedThisTurn' | 'boardCount'
+    scaleTarget?: 'self' | 'opponent' | 'all'
+    statTarget?: 'attack' | 'health' | 'both'
   }>
 }
 

@@ -58,6 +58,21 @@ const counts = computed<Record<string, number>>(() => {
   return map
 })
 
+const ownedCounts = computed<Record<string, number>>(() => {
+  const map: Record<string, number> = {}
+  for (const uc of userCards.value) {
+    const t = dbCardToTemplate(uc.cards)
+    const k = cardKey(t)
+    map[k] = (map[k] ?? 0) + (uc.count ?? 0)
+  }
+  return map
+})
+
+function maxCopiesFor(card: CardTemplate): number {
+  const owned = ownedCounts.value[cardKey(card)] ?? 0
+  return Math.min(MAX_COPIES, owned)
+}
+
 /** Deck contents grouped by card, preserving first-seen order. */
 const deckGroups = computed<{ card: CardTemplate; count: number }[]>(() => {
   const d = editingDeck.value
@@ -75,15 +90,41 @@ const deckGroups = computed<{ card: CardTemplate; count: number }[]>(() => {
   return order.map(k => map.get(k)!)
 })
 
-// Check if user has all cards for a predefined deck
+// Check if user has all cards for a predefined deck (with correct counts)
 function hasAllCards(deckCards: any[]): boolean {
-  const userCardNames = new Set(pool.value.map(c => c.title))
-  return deckCards.every(card => userCardNames.has(card.name))
+  const cardCounts = new Map<string, number>()
+  for (const card of deckCards) {
+    cardCounts.set(card.name, (cardCounts.get(card.name) ?? 0) + 1)
+  }
+
+  for (const [cardName, requiredCount] of cardCounts) {
+    const ownedCount = ownedCounts.value[cardName] ?? 0
+    if (ownedCount < requiredCount) return false
+  }
+  return true
 }
 
-// Check if specific card is owned
-function hasCard(card: any): boolean {
-  return pool.value.some(c => c.title === card.name)
+// Check if specific card instance is owned (handles duplicates in deck)
+function hasCard(card: any, idx?: number, deckCards?: any[]): boolean {
+  const ownedCount = ownedCounts.value[card.name] ?? 0
+  // If idx and deckCards are provided, check for duplicate handling
+  if (idx !== undefined && deckCards) {
+    const beforeCount = deckCards.slice(0, idx).filter(c => c.name === card.name).length
+    return ownedCount > beforeCount
+  }
+  // Otherwise just check if owned at all
+  return ownedCount > 0
+}
+
+// Get rarity color for card
+function getRarityColor(rarity?: string): string {
+  switch (rarity) {
+    case 'Common': return 'border-gray-400'
+    case 'Rare': return 'border-blue-400'
+    case 'Epic': return 'border-purple-400'
+    case 'Legendary': return 'border-yellow-400'
+    default: return 'border-gray-400'
+  }
 }
 
 async function loadUserCards() {
@@ -135,7 +176,8 @@ function confirmDelete(id: string, name: string) {
 }
 
 function canAdd(card: CardTemplate): boolean {
-  return total.value < MAX_CARDS && (counts.value[cardKey(card)] ?? 0) < MAX_COPIES
+  const limit = maxCopiesFor(card)
+  return total.value < MAX_CARDS && (counts.value[cardKey(card)] ?? 0) < limit
 }
 
 function isCurrent(id: string): boolean {
@@ -159,7 +201,7 @@ function usePredefinedDeck(deck: any) {
     health: c.health || 0,
     charge: c.charge || false,
     effects: c.effects || [],
-    rarity: 'Common',
+    rarity: c.rarity || 'Common',
   }))
   selectCurrent(newDeck.id)
   viewMode.value = 'custom'
@@ -229,8 +271,8 @@ function closeCardModal() {
                 v-for="(card, idx) in deck.cards"
                 :key="idx"
                 @click="openCardModal(card)"
-                class="aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 relative"
-                :class="hasCard(card) ? '' : 'grayscale opacity-50'"
+                class="aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 relative border-2"
+                :class="[hasCard(card, idx, deck.cards) ? '' : 'grayscale opacity-50', getRarityColor(card.rarity)]"
               >
                 <img :src="card.image" :alt="card.name" class="w-full h-full object-cover" />
               </button>
@@ -402,15 +444,17 @@ function closeCardModal() {
             >
               <TcgCard :card="userCard" />
               <span
-                class="absolute top-2 right-2 min-w-6 h-6 px-1 flex items-center justify-center rounded-full text-white text-[10px] font-bold shadow"
+                class="absolute top-10 right-2 min-w-6 h-6 px-1 flex items-center justify-center rounded-full text-white text-[10px] font-bold shadow"
                 :class="(counts[cardKey(dbCardToTemplate(userCard.cards))] ?? 0) > 0 ? 'bg-primary' : 'bg-black/60'"
               >
-                {{ counts[cardKey(dbCardToTemplate(userCard.cards))] ?? 0 }}/{{ MAX_COPIES }}
+                {{ counts[cardKey(dbCardToTemplate(userCard.cards))] ?? 0 }}/{{ maxCopiesFor(dbCardToTemplate(userCard.cards)) }}
               </span>
               <span
                 v-if="canAdd(dbCardToTemplate(userCard.cards))"
-                class="absolute bottom-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-emerald-500 text-white text-xs font-bold shadow"
-              >＋</span>
+                class="absolute left-1/2 -mt-4 top-1/2 w-24 h-24 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full bg-emerald-500/50 text-white text-4xl font-bold shadow justify-center align-middle"
+              >
+                <span class="-mt-2">＋</span>
+              </span>
               <span
                 v-else
                 class="absolute bottom-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-500 text-white text-xs font-bold shadow"

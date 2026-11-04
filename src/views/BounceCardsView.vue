@@ -8,7 +8,7 @@ import { createAiController, useOnlineController, type BattleController, type Lo
 import { STARTER_CARDS } from '@/game/cards'
 import { getSelectedEnemy } from '@/game/enemies'
 import { useDecks } from '@/game/useDecks'
-import { describeCardEffects } from '@/game/effects'
+
 import type { BoardCreature } from '@/game/types'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
@@ -35,6 +35,7 @@ const enemy = getSelectedEnemy()
 
 // Card revealed in the centre of the board when the opponent plays.
 const ghostCard = ref<CardData | null>(null)
+const burnFlash = ref(false)
 
 // Resolve once the image is fetched (and decoded) so the reveal animation
 // never starts before the artwork is ready.
@@ -90,6 +91,12 @@ async function playerPlayCard(card: CardData): Promise<boolean> {
   return controller.playCard(card)
 }
 
+async function playerDrawForMana() {
+  const ok = await controller.drawCardForMana()
+  if (ok) flash('Drew a card for 3 mana')
+  else flash('Cannot draw')
+}
+
 function playerAttack(attackerId: number, target: BoardCreature | 'hero'): boolean {
   return controller.attack(attackerId, target === 'hero' ? { type: 'hero' } : { type: 'creature', instanceId: target.instanceId })
 }
@@ -107,6 +114,16 @@ function playerReset() {
 }
 
 const state = computed(() => controller.state)
+
+watch(() => state.value.lastBattleEvent?.seq, (seq, prev) => {
+  if (!seq || seq === prev) return
+  const ev = state.value.lastBattleEvent
+  if (ev?.type === 'CARD_BURNED') {
+    burnFlash.value = true
+    window.clearTimeout((burnFlash as any)._t)
+    ;(burnFlash as any)._t = window.setTimeout(() => (burnFlash.value = false), 900)
+  }
+})
 const busy = computed(() => controller.busy.value)
 const isPlayerTurn = computed(() => controller.isPlayerTurn.value)
 const isOver = computed(() => controller.isOver.value)
@@ -124,7 +141,8 @@ const showPanel = ref(false)
 const attackerId = ref<number | null>(null)
 const attacker = computed(() => state.value.playerBoard.find(c => c.instanceId === attackerId.value) ?? null)
 const targeting = computed(() => !!attacker.value && isPlayerTurn.value)
-const canAfford = computed(() => !!selectedCard.value && state.value.player.mana >= selectedCard.value.manaCost)
+const effectiveSelectedCost = computed(() => selectedCard.value ? Math.max(0, selectedCard.value.manaCost - (state.value.nextCardManaDiscount ?? 0)) : 0)
+const canAfford = computed(() => !!selectedCard.value && state.value.player.mana >= effectiveSelectedCost.value)
 
 const bounceRef = ref<InstanceType<typeof BounceCards> | null>(null)
 const deckEl = ref<HTMLElement | null>(null)
@@ -137,8 +155,6 @@ function flash(msg: string) {
   window.clearTimeout((flash as any)._t)
   ;(flash as any)._t = window.setTimeout(() => (message.value = ''), 1500)
 }
-
-const selectedEffects = computed(() => (selectedCard.value ? describeCardEffects(selectedCard.value.effects) : []))
 
 const topDiscard = computed(() => state.value.discardPile[state.value.discardPile.length - 1] ?? null)
 
@@ -173,6 +189,16 @@ async function playSelectedCard() {
   await bounceRef.value?.playCardOut(id)
   await playerPlayCard(card)
   playing.value = false
+}
+
+async function convertSelectedCard() {
+  const card = selectedCard.value
+  if (!card || !isPlayerTurn.value) return
+  selectedCard.value = null
+  attackerId.value = null
+  const ok = await controller.convertCard(card)
+  if (ok) flash('Converted to +1 mana')
+  else flash('Cannot convert')
 }
 
 function onEndTurn() {
@@ -231,8 +257,8 @@ const fallbackWidth = ref(typeof window !== 'undefined' ? window.innerWidth - 60
 
 const effectiveContainerWidth = computed(() => containerWidth.value || fallbackWidth.value)
 
-const cardWidth = ref(64)
-const cardHeight = ref(92)
+const cardWidth = ref(130)
+const cardHeight = ref(340)
 const useAutoSize = ref(false)
 
 const cardAspectRatio = computed(() => cardWidth.value / cardHeight.value)
@@ -241,22 +267,22 @@ function computeAutoCardWidth(): number {
   const padding = 16
   const availableWidth = effectiveContainerWidth.value - padding
   const count = state.value.hand.length
-  if (count <= 1) return Math.min(84, availableWidth * 0.6)
+  if (count <= 1) return Math.min(170, availableWidth * 0.6)
   const maxCardWidth = availableWidth / (count * 0.75)
-  return Math.min(84, Math.max(48, maxCardWidth))
+  return Math.min(170, Math.max(170, maxCardWidth))
 }
 
 const finalCardWidth = computed(() => useAutoSize.value ? computeAutoCardWidth() : cardWidth.value)
-const finalCardHeight = computed(() => useAutoSize.value ? finalCardWidth.value : cardHeight.value)
+const finalCardHeight = computed(() => useAutoSize.value ? Math.max(170, finalCardWidth.value) : cardHeight.value)
 
 // Flatter arc so the hand stays compact inside the fixed-height layout
 function computeArcTransforms(count: number): string[] {
   if (count === 0) return []
   const cw = finalCardWidth.value
-  const maxSpread = Math.min(effectiveContainerWidth.value * 0.85, cw * count * 1.3)
+  const maxSpread = Math.min(effectiveContainerWidth.value * 0.6, cw * count * 0.75)
   const step = count > 1 ? maxSpread / (count - 1) : 0
-  const radius = maxSpread / 2 + 150
-  const arcHeight = radius * 0.16
+  const radius = maxSpread / 2 + 120
+  const arcHeight = radius * 0.14
   return Array.from({ length: count }, (_, i) => {
     const x = -maxSpread / 2 + i * step
     const normalizedX = x / radius
@@ -279,7 +305,7 @@ const updateContainerWidth = () => {
   fallbackWidth.value = window.innerWidth - 60
   // Keep the whole screen scroll-free on short viewports
   const h = window.innerHeight
-  containerHeight.value = h < 640 ? 132 : h < 720 ? 152 : 170
+  containerHeight.value = h < 640 ? 340 : h < 720 ? 400 : 460
 }
 
 // Keep the deck origin fresh for turn-start draws performed by the engine
@@ -300,9 +326,6 @@ onUnmounted(() => {
   destroyOnline?.()
 })
 
-function typeLabel(type: string) {
-  return type === 'creature' ? 'Creature' : 'Spell'
-}
 </script>
 
 <template>
@@ -313,12 +336,14 @@ function typeLabel(type: string) {
       <div class="flex flex-col items-center gap-1">
         <span class="text-[8px] font-bold tracking-wider text-rose-500 leading-none">{{ opponentTag }}</span>
         <div class="flex flex-col items-center gap-[2px]">
-          <span v-for="i in state.opponent.maxMana" :key="'om' + i"
+          <span v-for="i in Math.max(state.opponent.maxMana, state.opponent.mana)" :key="'om' + i"
             class="w-2.5 h-2.5 rounded-full border"
-            :class="i <= state.opponent.mana ? 'bg-indigo-500 border-indigo-300' : 'bg-transparent border-gray-300 dark:border-gray-700'" />
+            :class="i <= state.opponent.mana
+              ? (i <= state.opponent.maxMana ? 'bg-indigo-500 border-indigo-300' : 'bg-orange-500 border-orange-300')
+              : (i <= state.opponent.maxMana ? 'bg-transparent border-gray-300 dark:border-gray-700' : 'bg-transparent border-orange-300/40')" />
         </div>
         <span class="text-[11px] font-mono font-bold leading-none"
-          :class="state.opponent.mana > 0 ? 'text-indigo-600 dark:text-indigo-300' : 'text-gray-400 dark:text-gray-600'">{{ state.opponent.mana }}</span>
+          :class="state.opponent.mana > state.opponent.maxMana ? 'text-orange-600 dark:text-orange-300' : (state.opponent.mana > 0 ? 'text-indigo-600 dark:text-indigo-300' : 'text-gray-400 dark:text-gray-600')">{{ state.opponent.mana }}</span>
       </div>
 
       <div class="w-7 h-px bg-gray-300 dark:bg-gray-700" />
@@ -326,11 +351,20 @@ function typeLabel(type: string) {
       <div class="flex flex-col items-center gap-1">
         <span class="text-[8px] font-bold tracking-wider text-emerald-600 dark:text-emerald-400 leading-none">YOU</span>
         <div class="flex flex-col items-center gap-[2px]">
-          <span v-for="i in state.player.maxMana" :key="'pm' + i"
+          <span v-for="i in Math.max(state.player.maxMana, state.player.mana)" :key="'pm' + i"
             class="w-2.5 h-2.5 rounded-full border"
-            :class="i <= state.player.mana ? 'bg-indigo-500 border-indigo-300' : 'bg-transparent border-gray-300 dark:border-gray-700'" />
+            :class="i <= state.player.mana
+              ? (i <= state.player.maxMana ? 'bg-indigo-500 border-indigo-300' : 'bg-orange-500 border-orange-300')
+              : (i <= state.player.maxMana ? 'bg-transparent border-gray-300 dark:border-gray-700' : 'bg-transparent border-orange-300/40')" />
         </div>
-        <span class="text-[11px] font-mono font-bold leading-none text-indigo-600 dark:text-indigo-300">{{ state.player.mana }}</span>
+        <span class="text-[11px] font-mono font-bold leading-none"
+          :class="state.player.mana > state.player.maxMana ? 'text-orange-600 dark:text-orange-300' : 'text-indigo-600 dark:text-indigo-300'">{{ state.player.mana }}</span>
+        <button
+          @click="playerDrawForMana"
+          :disabled="!isPlayerTurn || state.player.mana < 3 || state.hasDrawnCardWithManaThisTurn"
+          class="mt-1 w-8 h-8 rounded-full bg-indigo-500 text-white text-[10px] font-bold shadow disabled:opacity-40 active:scale-95 transition"
+          title="Pay 3 mana to draw a card"
+        >🃏</button>
       </div>
     </aside>
 
@@ -403,8 +437,10 @@ function typeLabel(type: string) {
 
     <!-- Battleground -->
     <main class="flex-1 min-h-0 ml-12 px-2 py-2 flex flex-col gap-1.5">
-      <div class="flex-1 min-h-0 rounded-2xl border bg-white/70 dark:bg-gray-800/70 flex items-center justify-center gap-2 flex-wrap overflow-hidden p-1.5 transition-colors"
+      <div class="creatures-field relative flex-1 min-h-0 rounded-2xl border bg-white/70 dark:bg-gray-800/70 flex items-center justify-center gap-2 flex-wrap overflow-auto p-1.5 transition-colors"
         :class="state.phase === 'opponent' ? 'border-rose-400/70 ring-1 ring-rose-400/30' : 'border-gray-200 dark:border-gray-700'">
+        <span v-if="state.opponentBoard.length > 4"
+          class="pointer-events-none absolute bottom-4 text-rose-500 text-lg animate-bounce z-10 left-0">⬇</span>
         <CreatureTile
           v-for="c in state.opponentBoard" :key="c.instanceId" :creature="c"
           :interactive="targeting" :targetable="targeting" @pick="onOpponentCreatureClick(c)" />
@@ -422,8 +458,10 @@ function typeLabel(type: string) {
         <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
       </div>
 
-      <div class="flex-1 min-h-0 rounded-2xl border bg-white/70 dark:bg-gray-800/70 flex items-center justify-center gap-2 flex-wrap overflow-hidden p-1.5 transition-colors"
+      <div class="creatures-field relative flex-1 min-h-0 rounded-2xl border bg-white/70 dark:bg-gray-800/70 flex items-center justify-center gap-2 flex-wrap overflow-auto p-1.5 transition-colors"
         :class="isPlayerTurn ? 'border-emerald-400/70 ring-1 ring-emerald-400/30' : 'border-gray-200 dark:border-gray-700'">
+        <span v-if="state.playerBoard.length > 4"
+          class="pointer-events-none absolute bottom-4 left-0 text-emerald-500 text-lg animate-bounce z-10 left-0">⬇</span>
         <CreatureTile
           v-for="c in state.playerBoard" :key="c.instanceId" :creature="c"
           :interactive="isPlayerTurn"
@@ -436,38 +474,27 @@ function typeLabel(type: string) {
       </div>
     </main>
 
-    <!-- Context strip: selected card / targeting / hint -->
-    <div class="flex-shrink-0 ml-12 px-2 pb-1">
-      <div class="h-14 rounded-xl border flex items-center gap-2 px-2 overflow-hidden transition-colors"
+    <!-- Context strip: action buttons only (card details are on the card) -->
+    <div
+      class="flex-shrink-0 ml-12 px-2 pb-1 fixed top-12 w-full-minus-sidebar bg-white dark:bg-gray-800 left-0 right-0 z-50"
+      v-if="selectedCard"
+    >
+      <div class="h-10 rounded-lg border flex items-center gap-2 px-2 overflow-hidden transition-colors"
         :class="selectedCard ? 'border-primary/40 bg-primary/5 dark:bg-primary/10' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60'">
 
         <template v-if="selectedCard">
-          <img :src="selectedCard.image" :alt="selectedCard.title"
-            class="w-11 h-14 rounded-md object-cover flex-shrink-0 border border-primary/40" />
-          <div class="flex-1 min-w-0 flex flex-col justify-center">
-            <div class="flex items-center gap-1.5">
-              <span class="font-semibold text-[13px] text-gray-900 dark:text-white truncate">{{ selectedCard.title }}</span>
-              <span class="px-1.5 py-0.5 text-[9px] font-medium rounded-full bg-primary/20 text-primary flex-shrink-0">{{ selectedCard.rarity }}</span>
-              <span class="px-1.5 py-0.5 text-[9px] font-medium rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 flex-shrink-0">{{ typeLabel(selectedCard.type) }}</span>
-            </div>
-            <div class="flex items-center gap-1.5 mt-0.5 text-[11px]">
-              <span class="px-1.5 py-0.5 rounded bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 font-bold">💧 {{ selectedCard.manaCost }}</span>
-              <span v-if="selectedCard.attack !== undefined" class="px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 font-mono">⚔ {{ selectedCard.attack }}</span>
-              <span v-if="selectedCard.health !== undefined" class="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-mono">❤ {{ selectedCard.health }}</span>
-              <span v-if="selectedCard.charge" class="px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-bold">⚡ Charge</span>
-            </div>
-            <div class="flex gap-1 mt-0.5 overflow-x-auto no-scrollbar">
-              <span v-for="(effect, i) in selectedEffects" :key="i"
-                class="whitespace-nowrap px-1.5 py-0.5 text-[9px] rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                {{ effect }}
-              </span>
-            </div>
-          </div>
+          <span class="flex-1 min-w-0 text-xs font-semibold text-gray-900 dark:text-white truncate">
+            {{ selectedCard.title }}
+          </span>
+          <button @click="convertSelectedCard" :disabled="playing || state.hasConvertedCardThisTurn"
+            title="Convert this card to +1 mana"
+            class="flex-shrink-0 px-2 py-1 rounded-md bg-amber-500 text-white text-[10px] font-bold shadow disabled:opacity-40 active:scale-[0.98] transition flex items-center gap-1">
+            <span>🔥</span><span>Convert</span>
+          </button>
           <button @click="playSelectedCard" :disabled="playing || !canAfford"
             :title="canAfford ? 'Play this card' : 'Not enough mana'"
-            class="flex-shrink-0 self-center px-3 py-2 rounded-lg bg-primary text-white text-xs font-bold shadow disabled:opacity-40 active:scale-[0.98] transition flex items-center gap-1">
-            <span>{{ selectedCard.type === 'creature' ? '🐾' : '✨' }}</span>
-            <span>{{ selectedCard.type === 'creature' ? 'Summon' : 'Cast' }}</span>
+            class="flex-shrink-0 px-2 py-1 rounded-md bg-primary text-white text-[10px] font-bold shadow disabled:opacity-40 active:scale-[0.98] transition flex items-center gap-1">
+            <span>{{ selectedCard.type === 'creature' ? '🐾' : '✨' }}</span><span>{{ selectedCard.type === 'creature' ? 'Summon' : 'Cast' }}</span>
           </button>
         </template>
 
@@ -491,8 +518,8 @@ function typeLabel(type: string) {
     </div>
 
     <!-- Hand -->
-    <div class="relative z-30 flex-shrink-0 ml-12 px-2 bounce-container">
-      <div class="text-center text-[10px] leading-none text-gray-400 dark:text-gray-500 mb-1">
+    <div class="relative z-30 flex-shrink-0 ml-12 px-2 -mt-0 bounce-container">
+      <div v-if="false" class="text-center text-[10px] leading-none text-gray-400 dark:text-gray-500 mb-1">
         Hand · {{ state.hand.length }}
       </div>
       <BounceCards
@@ -510,7 +537,7 @@ function typeLabel(type: string) {
         class="w-full"
         @card-selected="onCardSelected"
       />
-      <div v-else class="flex items-center justify-center text-[11px] text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl"
+      <div v-else class="flex items-center justify-center text-[11px] text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl max-h-[290px] pointer-events-none"
         :style="{ height: containerHeight + 'px' }">
         Hand is empty
       </div>
@@ -575,14 +602,28 @@ function typeLabel(type: string) {
       </div>
     </transition>
 
+    <!-- Burn flash -->
+    <transition name="fade">
+      <div v-if="burnFlash"
+        class="fixed top-24 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-full bg-amber-500 text-white text-xs font-bold shadow-lg">
+        🔥 Card burned → +1 mana
+      </div>
+    </transition>
+
     <!-- Victory / Defeat overlay -->
     <BattleOverlay v-if="isOver && state.winner" :winner="state.winner" :opponent-name="state.opponent.name" @reset="onReset" />
   </div>
 </template>
 
 <style scoped>
+.creatures-field {
+  overflow: auto;
+}
+
 .bounce-container {
   overflow: visible;
+  max-height: 290px;
+  height: 290px !important;
 }
 
 .ghost-card {

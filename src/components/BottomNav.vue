@@ -14,7 +14,7 @@ const navItems = [
   { path: '/enemies', label: 'Fight', icon: '⚔️' },
   { path: '/online', label: 'Online', icon: '🌐' },
   { path: '/decks', label: 'Decks', icon: '🗂️' },
-  { path: '/card-swap', label: 'Swap', icon: '🔄' },
+  { path: '/card-swap', label: 'Boosters', icon: '🔄' },
   { path: '/profile', label: 'Profile', icon: '👤' },
 ]
 

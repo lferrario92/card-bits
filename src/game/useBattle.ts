@@ -11,6 +11,21 @@ export interface BattleApi {
   drawCard: (side: Side) => void
   log: (msg: string) => void
   delay: (ms: number) => Promise<void>
+  convertCardToMana: (card: CardData, side: Side) => boolean
+  convertToMana: (card: CardData, side: Side) => boolean
+  burnCard: (card: CardData, side: Side) => boolean
+  drawCardForMana: (side: Side) => boolean
+  drawWithMana: (side: Side) => boolean
+  manaDraw: (side: Side) => boolean
+  pay3ManaToDraw: (side: Side) => boolean
+  emitBattleEvent: (event: BattleEvent) => void
+  effectiveManaCost: (card: CardData) => number
+}
+
+export interface BattleEvent {
+  type: string
+  playerId: string
+  card: CardData
 }
 
 export interface BattleState {
@@ -28,6 +43,16 @@ export interface BattleState {
   phase: BattlePhase
   winner: Side | null
   log: string[]
+  /** Storm / turn play counter. Reset at turn start. */
+  cardsPlayedThisTurn: number
+  /** True once a card has been converted to mana this turn. */
+  hasConvertedCardThisTurn: boolean
+  /** True once the 3-mana draw ability has been used this turn. */
+  hasDrawnCardWithManaThisTurn: boolean
+  /** Temporary mana cost discount applied to the next played card. */
+  nextCardManaDiscount: number
+  /** Last broadcast battle event (for animation syncing). */
+  lastBattleEvent: (BattleEvent & { seq: number }) | null
 }
 
 export interface BattleConfig {
@@ -56,6 +81,11 @@ export interface BattleConfig {
    * Use it to broadcast snapshots or trigger UI side effects.
    */
   onStateChange?: () => void
+  /**
+   * Fired when a battle event (e.g. CARD_BURNED) is emitted, so views and
+   * multiplayer peers can trigger animations.
+   */
+  onBattleEvent?: (event: BattleEvent) => void
 }
 
 let cardIdCounter = 1
@@ -116,9 +146,15 @@ export function useBattle(config: BattleConfig) {
     phase: 'player',
     winner: null,
     log: [],
+    cardsPlayedThisTurn: 0,
+    hasConvertedCardThisTurn: false,
+    hasDrawnCardWithManaThisTurn: false,
+    nextCardManaDiscount: 0,
+    lastBattleEvent: null,
   })
 
   const busy = ref(false)
+  let battleEventSeq = 0
 
   const isPlayerTurn = computed(() => state.phase === 'player' && !busy.value && !state.winner)
   const isOver = computed(() => state.winner !== null)
@@ -173,10 +209,14 @@ export function useBattle(config: BattleConfig) {
   }
 
   function cleanupDead() {
+    const deadPlayer = state.playerBoard.filter(c => c.hp <= 0)
+    const deadOpponent = state.opponentBoard.filter(c => c.hp <= 0)
+    for (const c of deadPlayer) state.discardPile = [...state.discardPile, c.card]
+    for (const c of deadOpponent) state.opponentDiscardPile = [...state.opponentDiscardPile, c.card]
     const p = state.playerBoard.length, o = state.opponentBoard.length
     state.playerBoard = state.playerBoard.filter(c => c.hp > 0)
     state.opponentBoard = state.opponentBoard.filter(c => c.hp > 0)
-    if (p !== state.playerBoard.length || o !== state.opponentBoard.length) markChanged()
+    if (deadPlayer.length || deadOpponent.length || p !== state.playerBoard.length || o !== state.opponentBoard.length) markChanged()
   }
 
   function findCreature(instanceId: number): BoardCreature | null {
@@ -210,8 +250,23 @@ export function useBattle(config: BattleConfig) {
   }
 
   // --- Effect resolution ---
-  function resolveEffect(effect: CardEffect, caster: Side) {
+  function resolveEffect(effect: CardEffect, caster: Side, sourceCard?: CardData) {
     const target = entityFor(effect.target, caster)
+
+    // Apply Storm scaling if requested.
+    let value = effect.value
+    if (effect.scaleBy === 'cardsPlayedThisTurn') {
+      value = value * state.cardsPlayedThisTurn
+    } else if (effect.scaleBy === 'boardCount') {
+      const st = effect.scaleTarget ?? 'self'
+      let count = 0
+      if (st === 'self' || st === 'all') count += boardForSide(caster).length
+      if (st === 'opponent' || st === 'all') {
+        const other: Side = caster === 'player' ? 'opponent' : 'player'
+        count += boardForSide(other).length
+      }
+      value = value * count
+    }
 
     // Handle array of targets (for 'all')
     const targets = Array.isArray(target) ? target : [target]
@@ -219,26 +274,87 @@ export function useBattle(config: BattleConfig) {
     for (const t of targets) {
       switch (effect.action) {
         case 'damage':
-          damage(t, effect.value)
-          log(`${t.name} — ${effect.value} damage`)
+          damage(t, value)
+          log(`${t.name} — ${value} damage`)
           break
         case 'heal':
-          heal(t, effect.value)
-          log(`${t.name} — +${effect.value} HP`)
+          heal(t, value)
+          log(`${t.name} — +${value} HP`)
           break
         case 'shield':
-          shield(t, effect.value)
-          log(`${t.name} — +${effect.value} shield`)
+          shield(t, value)
+          log(`${t.name} — +${value} shield`)
           break
+        case 'summon': {
+          const template = effect.card ?? (sourceCard as unknown as CardTemplate)
+          if (!template) break
+          const card: CardData = { ...template, id: cardIdCounter++, effects: (template.effects ?? []).map(e => ({ ...e })) }
+          const maxHp = card.health && card.health > 0 ? card.health : 1
+          const creature: BoardCreature = {
+            instanceId: creatureInstanceCounter++,
+            side: caster,
+            card,
+            attack: card.attack ?? 0,
+            hp: maxHp,
+            maxHp,
+            shield: 0,
+            canAttack: !!card.charge,
+            summoningSick: !card.charge,
+          }
+          if (caster === 'player') state.playerBoard = [...state.playerBoard, creature]
+          else state.opponentBoard = [...state.opponentBoard, creature]
+          log(`${subject(caster)} summons ${card.title}`)
+          break
+        }
+        case 'add_copy': {
+          const template = effect.card ?? (sourceCard as unknown as CardTemplate)
+          if (!template) break
+          const count = Math.max(1, value || 1)
+          const copies: CardData[] = []
+          for (let i = 0; i < count; i++) {
+            copies.push({ ...template, id: cardIdCounter++, effects: (template.effects ?? []).map(e => ({ ...e })) })
+          }
+          // Determine whose hand/deck receives the copies based on target.
+          let owner: Side = caster
+          if (effect.target === 'opponent') owner = caster === 'player' ? 'opponent' : 'player'
+          else if (effect.target === 'player') owner = 'player'
+          else if (effect.target === 'self') owner = caster
+          if (owner === 'player') {
+            state.hand = [...state.hand, ...copies]
+          } else {
+            state.opponentHand = [...state.opponentHand, ...copies]
+          }
+          log(`${subject(owner)} adds ${count} cop${count === 1 ? 'y' : 'ies'} of ${template.title}`)
+          break
+        }
+        case 'buff_board': {
+          const st = effect.statTarget ?? 'both'
+          const board = boardForSide(caster)
+          for (const c of board) {
+            if (st === 'attack' || st === 'both') c.attack += value
+            if (st === 'health' || st === 'both') {
+              c.hp += value
+              c.maxHp += value
+            }
+          }
+          log(`${subject(caster)} buffs the board (+${value} ${st})`)
+          break
+        }
+        case 'draw': {
+          const n = Math.max(0, value)
+          for (let i = 0; i < n; i++) drawCard(caster)
+          log(`${subject(caster)} draws ${n} card${n === 1 ? '' : 's'}`)
+          break
+        }
       }
     }
     checkOutcome()
   }
 
-  function resolveEffects(effects: CardEffect[], caster: Side) {
+  function resolveEffects(effects: CardEffect[], caster: Side, sourceCard?: CardData) {
     for (const effect of effects) {
       if (state.winner) break
-      resolveEffect(effect, caster)
+      resolveEffect(effect, caster, sourceCard)
     }
     markChanged()
   }
@@ -267,11 +383,20 @@ export function useBattle(config: BattleConfig) {
       c.canAttack = true
       c.summoningSick = false
     }
+    // Reset per-turn flags/modifiers.
+    state.cardsPlayedThisTurn = 0
+    state.hasConvertedCardThisTurn = false
+    state.hasDrawnCardWithManaThisTurn = false
+    state.nextCardManaDiscount = 0
     markChanged()
   }
 
+  function effectiveManaCost(card: CardData): number {
+    return Math.max(0, card.manaCost - (state.nextCardManaDiscount ?? 0))
+  }
+
   function canPlayCard(card: CardData, side: Side): boolean {
-    return !state.winner && entityForSide(side).mana >= card.manaCost
+    return !state.winner && entityForSide(side).mana >= effectiveManaCost(card)
   }
 
   // --- Card play ---
@@ -283,19 +408,26 @@ export function useBattle(config: BattleConfig) {
     if (idx === -1) return false
 
     const ent = entityForSide(side)
-    if (ent.mana < card.manaCost) return false
-    ent.mana -= card.manaCost
+    const cost = effectiveManaCost(card)
+    if (ent.mana < cost) return false
+    ent.mana -= cost
+    // Consume the temporary discount once a card is played.
+    state.nextCardManaDiscount = 0
 
     const nextHand = [...fromHand]
     nextHand.splice(idx, 1)
     if (side === 'player') state.hand = nextHand
     else state.opponentHand = nextHand
 
+    // Storm / turn play counter.
+    state.cardsPlayedThisTurn = (state.cardsPlayedThisTurn ?? 0) + 1
+
     const who = subject(side)
     log(`${who} ${verbPlay(who)} ${card.title}`)
 
     if (card.type === 'spell') {
-      resolveEffects(card.effects, side)
+      resolveEffects(card.effects, side, card)
+      cleanupDead()
       if (side === 'player') state.discardPile = [...state.discardPile, card]
       else state.opponentDiscardPile = [...state.opponentDiscardPile, card]
       markChanged()
@@ -316,11 +448,62 @@ export function useBattle(config: BattleConfig) {
       if (side === 'player') state.playerBoard = [...state.playerBoard, creature]
       else state.opponentBoard = [...state.opponentBoard, creature]
       // Entrance / on-play effects reuse the same effect list.
-      resolveEffects(card.effects, side)
+      resolveEffects(card.effects, side, card)
+      cleanupDead()
     }
     markChanged()
     return true
   }
+
+  function emitBattleEvent(event: BattleEvent) {
+    battleEventSeq++
+    state.lastBattleEvent = { ...event, seq: battleEventSeq }
+    config.onBattleEvent?.(event)
+    markChanged()
+  }
+
+  function convertCardToMana(card: CardData, side: Side): boolean {
+    if (state.winner) return false
+    if (state.hasConvertedCardThisTurn) return false
+    const fromHand = side === 'player' ? state.hand : state.opponentHand
+    const idx = fromHand.findIndex(c => c.id === card.id)
+    if (idx === -1) return false
+
+    const ent = entityForSide(side)
+    const nextHand = [...fromHand]
+    nextHand.splice(idx, 1)
+    if (side === 'player') state.hand = nextHand
+    else state.opponentHand = nextHand
+
+    const discard = side === 'player' ? state.discardPile : state.opponentDiscardPile
+    if (side === 'player') state.discardPile = [...discard, card]
+    else state.opponentDiscardPile = [...discard, card]
+
+    ent.mana = Math.min(MANA_CAP, ent.mana + 1)
+    state.hasConvertedCardThisTurn = true
+
+    emitBattleEvent({ type: 'CARD_BURNED', playerId: side, card })
+    log(`${subject(side)} converts ${card.title} into mana`)
+    return true
+  }
+
+  const burnCard = convertCardToMana
+  const convertToMana = convertCardToMana
+
+  function drawCardForMana(side: Side): boolean {
+    if (state.winner) return false
+    if (state.hasDrawnCardWithManaThisTurn) return false
+    const ent = entityForSide(side)
+    if (ent.mana < 3) return false
+    ent.mana -= 3
+    state.hasDrawnCardWithManaThisTurn = true
+    drawCard(side)
+    markChanged()
+    return true
+  }
+  const drawWithMana = drawCardForMana
+  const manaDraw = drawCardForMana
+  const pay3ManaToDraw = drawCardForMana
 
   /**
    * Play a card after optionally awaiting a reveal animation. The card is
@@ -414,6 +597,18 @@ export function useBattle(config: BattleConfig) {
   async function defaultOpponentTurn() {
     if (state.winner) return
     drawCard('opponent')
+    // Optionally draw a card for 3 mana if hand is low and mana is excess.
+    if (!state.hasDrawnCardWithManaThisTurn && state.opponent.mana >= 3 && state.opponentHand.length < 3) {
+      drawCardForMana('opponent')
+    }
+    // Simulate burning a spare card into mana (emits CARD_BURNED).
+    if (!state.hasConvertedCardThisTurn && state.opponentHand.length > 2) {
+      const chosen = state.opponentHand.reduce((best, c) => (c.manaCost < best.manaCost ? c : best), state.opponentHand[0])
+      await delay(250)
+      convertCardToMana(chosen, 'opponent')
+      if (state.winner) return
+      await delay(250)
+    }
     // Spend available mana on the most expensive affordable cards.
     let guard = 0
     while (!state.winner && guard++ < 8) {
@@ -443,7 +638,7 @@ export function useBattle(config: BattleConfig) {
     }
   }
 
-  const api: BattleApi = { state, playCard, attack, drawCard, log, delay }
+  const api: BattleApi = { state, playCard, attack, drawCard, log, delay, convertCardToMana, convertToMana, burnCard, drawCardForMana, drawWithMana, manaDraw, pay3ManaToDraw, emitBattleEvent, effectiveManaCost }
 
   // --- Turn loop ---
   async function endTurn() {
@@ -507,6 +702,11 @@ export function useBattle(config: BattleConfig) {
     state.phase = 'player'
     state.winner = null
     state.log = []
+    state.cardsPlayedThisTurn = 0
+    state.hasConvertedCardThisTurn = false
+    state.hasDrawnCardWithManaThisTurn = false
+    state.nextCardManaDiscount = 0
+    state.lastBattleEvent = null
     busy.value = false
     log(`Battle start — ${possessive(state.player.name)} move`)
     markChanged()
@@ -524,6 +724,15 @@ export function useBattle(config: BattleConfig) {
     playCardAnimated,
     attack,
     canPlayCard,
+    effectiveManaCost,
+    convertCardToMana,
+    convertToMana,
+    burnCard,
+    drawCardForMana,
+    drawWithMana,
+    manaDraw,
+    pay3ManaToDraw,
+    emitBattleEvent,
     drawCard,
     endTurn,
     reset: init,

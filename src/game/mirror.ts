@@ -40,6 +40,13 @@ export function mirrorState(state: BattleState): BattleState {
     phase: state.phase === 'player' ? 'opponent' : state.phase === 'opponent' ? 'player' : state.phase,
     winner: state.winner === 'player' ? 'opponent' : state.winner === 'opponent' ? 'player' : state.winner,
     log: [...state.log],
+    cardsPlayedThisTurn: state.cardsPlayedThisTurn,
+    hasConvertedCardThisTurn: state.hasConvertedCardThisTurn,
+    hasDrawnCardWithManaThisTurn: state.hasDrawnCardWithManaThisTurn,
+    nextCardManaDiscount: state.nextCardManaDiscount,
+    lastBattleEvent: state.lastBattleEvent
+      ? { ...state.lastBattleEvent, playerId: state.lastBattleEvent.playerId === 'player' ? 'opponent' : 'player' }
+      : null,
   }
 }
 

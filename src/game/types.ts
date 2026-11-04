@@ -2,7 +2,7 @@ export type CardType = 'spell' | 'creature'
 
 export type EffectTarget = 'opponent' | 'player' | 'self' | 'all'
 
-export type EffectAction = 'damage' | 'heal' | 'shield'
+export type EffectAction = 'damage' | 'heal' | 'shield' | 'summon' | 'add_copy' | 'draw' | 'buff_board'
 
 export type Side = 'player' | 'opponent'
 
@@ -21,6 +21,23 @@ export interface CardEffect {
   target: EffectTarget
   action: EffectAction
   value: number
+  /**
+   * For "summon" / "add_copy": the card template to instantiate.
+   */
+  card?: CardTemplate
+  /**
+   * Optional scaling hook. When set, the effect's value is multiplied by the
+   * referenced counter at resolution time (e.g. Storm).
+   */
+  scaleBy?: 'cardsPlayedThisTurn' | 'boardCount'
+  /**
+   * For scaling effects: which side's board count to use (defaults to 'self').
+   */
+  scaleTarget?: 'self' | 'opponent' | 'all'
+  /**
+   * For "buff_board": which stat(s) to modify.
+   */
+  statTarget?: 'attack' | 'health' | 'both'
 }
 
 export interface CardData {

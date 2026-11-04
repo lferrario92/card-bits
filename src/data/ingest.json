@@ -104,7 +104,7 @@
       "manaCost": 3
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:21:46.211471+00:00"
+    "updated_at": "2026-11-01T02:01:25.552589+00:00"
   },
   {
     "id": "e407a5ce-98a2-4225-874c-6c668eac57c3",
@@ -122,14 +122,14 @@
       "effects": [
         {
           "value": 1,
-          "action": "shield",
+          "action": "summon",
           "target": "self"
         }
       ],
       "manaCost": 2
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:22:01.797785+00:00"
+    "updated_at": "2026-11-01T02:01:25.552589+00:00"
   },
   {
     "id": "2c3faf54-ebd8-42c8-b2ae-240157cca217",
@@ -162,7 +162,7 @@
     "description": "Daño directo al objetivo rival",
     "rarity": "Common",
     "main_set": "tcg_base_2026",
-    "image": "/assets/local_cards/achis/14.jpg",
+    "image": "/assets/local_cards/base2026/rayo_heterosexualizador.jpg",
     "tcg_available": true,
     "tcg_combat_data": {
       "type": "spell",
@@ -179,7 +179,7 @@
       "manaCost": 1
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:23:31.83475+00:00"
+    "updated_at": "2026-11-01T02:47:04.564406+00:00"
   },
   {
     "id": "1312ed10-cee8-473d-8ff9-25d88a998df1",
@@ -434,12 +434,17 @@
           "value": 1,
           "action": "damage",
           "target": "opponent"
+        },
+        {
+          "value": 1,
+          "action": "add_copy",
+          "target": "self"
         }
       ],
       "manaCost": 1
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:32:11.415296+00:00"
+    "updated_at": "2026-11-01T02:01:25.552589+00:00"
   },
   {
     "id": "7f8d30dc-4eb4-4de9-8ab7-8de8be32527a",
@@ -544,15 +549,16 @@
       "health": 2,
       "effects": [
         {
-          "value": 3,
+          "value": 1,
           "action": "damage",
-          "target": "opponent"
+          "target": "opponent",
+          "scaleBy": "cardsPlayedThisTurn"
         }
       ],
       "manaCost": 4
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:37:23.60776+00:00"
+    "updated_at": "2026-11-01T02:01:25.552589+00:00"
   },
   {
     "id": "4bd36732-a9e5-44f4-9ce9-63f2102fb8de",

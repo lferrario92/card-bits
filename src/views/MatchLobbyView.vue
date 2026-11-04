@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, onUnmounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useOnlineMatch } from '@/composables/useOnlineMatch'
 import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
+const route = useRoute()
 const { displayName, isAuthenticated } = useAuth()
+const shareStatus = ref('')
 const { match, role, waiting, error, createMatch, joinMatch, teardown } = useOnlineMatch()
 
 const mode = ref<'menu' | 'hosting' | 'joining'>('menu')
@@ -43,6 +45,34 @@ function back() {
     error.value = ''
   }
 }
+
+async function shareLink() {
+  const code = shareCode.value
+  if (!code) return
+  const url = `${window.location.origin}/online?code=${encodeURIComponent(code)}`
+  shareStatus.value = ''
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'Join my card battle', text: `Code: ${code}`, url })
+      shareStatus.value = 'Shared!'
+    } else {
+      await navigator.clipboard.writeText(url)
+      shareStatus.value = 'Link copied!'
+    }
+  } catch {
+    shareStatus.value = ''
+  }
+  if (shareStatus.value) {
+    window.setTimeout(() => (shareStatus.value = ''), 2000)
+  }
+}
+
+onMounted(() => {
+  const c = route.query.code
+  if (typeof c === 'string' && c.trim()) {
+    joinCode.value = c.trim().toUpperCase()
+  }
+})
 
 onUnmounted(teardown)
 </script>
@@ -106,6 +136,11 @@ onUnmounted(teardown)
           <div class="rounded-2xl border-2 border-emerald-200 dark:border-emerald-900/60 bg-white dark:bg-gray-800 p-6 shadow-sm text-center">
             <p class="text-xs font-semibold text-gray-500 dark:text-gray-400">Share this code</p>
             <p class="mt-2 text-4xl font-mono font-bold tracking-[0.3em] text-gray-900 dark:text-white">{{ shareCode }}</p>
+            <button @click="shareLink"
+              class="mt-3 px-4 py-2 rounded-xl bg-indigo-500 text-white text-sm font-bold shadow active:scale-[0.98] transition">
+              Share link
+            </button>
+            <p v-if="shareStatus" class="mt-2 text-xs text-emerald-600 dark:text-emerald-400">{{ shareStatus }}</p>
             <div v-if="waiting" class="mt-4 flex items-center justify-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
               <span class="w-3.5 h-3.5 rounded-full border-2 border-emerald-400/40 border-t-emerald-500 animate-spin" />
               Waiting for your opponent…

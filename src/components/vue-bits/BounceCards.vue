@@ -1,6 +1,7 @@
 <template>
   <div
     ref="containerRef"
+    class="hand-cards mt-0"
     :class="['relative flex items-center justify-center', className]"
     :style="{
       width: `${containerWidth}px`,
@@ -19,7 +20,7 @@
         height: `${cardHeight}px`,
         boxShadow: focusedIndex === idx ? '0 12px 30px rgba(0, 0, 0, 0.3)' : '0 4px 10px rgba(0, 0, 0, 0.2)',
         zIndex: focusedIndex === idx ? 100 : cards.length - idx,
-        borderRadius: '30px',
+        borderRadius: '8px',
         cursor: props.enableHover ? 'pointer' : 'default',
         touchAction: 'manipulation',
         userSelect: 'none',
@@ -29,30 +30,8 @@
       @click.stop="handleCardClick(idx)"
       @contextmenu.prevent
     >
-      <div class="card-inner relative w-full h-full rounded-[30px] overflow-hidden">
-        <img class="w-full h-full object-cover"
-          :class="canPlay(card) ? '' : 'grayscale-[0.6] brightness-75'"
-          :src="card.image" :alt="card.title" draggable="false" />
-
-        <!-- mana cost -->
-        <span class="absolute top-1 left-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-indigo-600 text-white text-[11px] font-bold shadow">
-          {{ card.manaCost }}
-        </span>
-        <!-- creature stats -->
-        <template v-if="card.type === 'creature'">
-          <span class="absolute bottom-1 left-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-md bg-amber-500 text-white text-[11px] font-bold shadow">
-            {{ card.attack ?? 0 }}
-          </span>
-          <span class="absolute bottom-1 right-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-md bg-rose-600 text-white text-[11px] font-bold shadow">
-            {{ card.health ?? 1 }}
-          </span>
-        </template>
-        <!-- charge keyword -->
-        <span v-if="card.charge"
-          class="absolute top-1 right-1 min-w-4 h-4 px-1 flex items-center justify-center rounded-br-md bg-indigo-400 text-white text-[9px] font-bold shadow"
-          title="Charge: can attack immediately">
-          ⚡
-        </span>
+      <div class="card-inner relative w-full h-full rounded-lg overflow-hidden">
+        <TcgCard :card="card" :fill="true" :compact="true" :show-count="false" :class="canPlay(card) ? '' : 'grayscale-[0.6] brightness-75'" />
       </div>
     </div>
   </div>
@@ -62,6 +41,7 @@
 import { gsap } from 'gsap';
 import { nextTick, onMounted, onUnmounted, ref, watch, computed } from 'vue';
 import type { CardData } from '@/game/types';
+import TcgCard from '@/components/TcgCard.vue';
 
 export type { CardData };
 
@@ -176,7 +156,7 @@ function computeFocusedTransforms(focusIdx: number): string[] {
 
   return Array.from({ length: count }, (_, i) => {
     if (i === focusIdx) {
-      return `translate(0, -50px) scale(1.12)`;
+      return `translate(0, -50px) scale(1.6)`;
     }
 
     const side = i < focusIdx ? -1 : 1;
@@ -345,3 +325,9 @@ onUnmounted(() => {
   });
 });
 </script>
+
+<style scoped>
+.hand-cards {
+  height: 270px !important;
+}
+</style>

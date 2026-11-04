@@ -151,7 +151,7 @@ async function onSignOut() {
       <!-- Match record -->
       <section class="rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm p-5">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-bold text-gray-900 dark:text-white">PvP Record</h2>
+          <h2 class="text-sm font-bold text-gray-900 dark:text-white">PvP Record (no se updatea un carajo)</h2>
           <button @click="loadStats" class="text-[11px] font-bold text-primary">Refresh</button>
         </div>
 

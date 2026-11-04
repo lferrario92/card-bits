@@ -25,6 +25,13 @@ export interface BattleController {
   playCard: (card: CardData) => Promise<boolean>
   attack: (attackerId: number, target: AttackTarget) => boolean
   drawCard: () => void
+  drawCardForMana: () => Promise<boolean>
+  drawWithMana: () => Promise<boolean>
+  manaDraw: () => Promise<boolean>
+  pay3ManaToDraw: () => Promise<boolean>
+  convertCard: (card: CardData) => Promise<boolean>
+  convertToMana: (card: CardData) => Promise<boolean>
+  burnCard: (card: CardData) => Promise<boolean>
   endTurn: () => Promise<void>
   reset: () => void
 }
@@ -40,6 +47,8 @@ type Intent =
   | { kind: 'play_card'; cardId: number }
   | { kind: 'attack'; attackerId: number; target: AttackTarget }
   | { kind: 'draw' }
+  | { kind: 'draw_for_mana' }
+  | { kind: 'convert_card'; cardId: number }
   | { kind: 'end_turn' }
 
 interface HandshakeMsg {
@@ -94,6 +103,13 @@ export function createAiController(
     playCard: async (card) => battle.playCard(card, 'player'),
     attack: (attackerId, target) => battle.attack(attackerId, target),
     drawCard: () => battle.drawCard('player'),
+    drawCardForMana: async () => battle.drawCardForMana('player'),
+    drawWithMana: async () => battle.drawWithMana('player'),
+    manaDraw: async () => battle.manaDraw('player'),
+    pay3ManaToDraw: async () => battle.pay3ManaToDraw('player'),
+    convertCard: async (card) => battle.convertCardToMana(card, 'player'),
+    convertToMana: async (card) => battle.convertToMana(card, 'player'),
+    burnCard: async (card) => battle.burnCard(card, 'player'),
     endTurn: () => battle.endTurn(),
     reset: () => battle.reset(),
   }
@@ -221,6 +237,18 @@ export function useOnlineController(opts: OnlineOptions): {
             broadcastSnapshot()
             return
           }
+          case 'draw_for_mana': {
+            void battle!.drawCardForMana('opponent')
+            broadcastSnapshot()
+            return
+          }
+          case 'convert_card': {
+            const card = state.opponentHand.find((c) => c.id === intent.cardId)
+            if (!card) return
+            void battle!.convertCardToMana(card, 'opponent')
+            broadcastSnapshot()
+            return
+          }
           case 'end_turn':
             turnHandler = null
             resolve()
@@ -308,6 +336,11 @@ export function useOnlineController(opts: OnlineOptions): {
     phase: opts.role === 'host' ? 'player' : 'opponent',
     winner: null,
     log: [],
+    cardsPlayedThisTurn: 0,
+    hasConvertedCardThisTurn: false,
+    hasDrawnCardWithManaThisTurn: false,
+    nextCardManaDiscount: 0,
+    lastBattleEvent: null,
   })
 
   // --- Assemble channel handlers once, role-aware ---
@@ -489,6 +522,76 @@ export function useOnlineController(opts: OnlineOptions): {
       } else {
         sendIntent({ kind: 'draw' })
       }
+    },
+    drawCardForMana: async () => {
+      if (opts.role === 'host') {
+        if (!battle) return false
+        const ok = battle.drawCardForMana('player')
+        if (ok) broadcastSnapshot()
+        return ok
+      }
+      sendIntent({ kind: 'draw_for_mana' })
+      return true
+    },
+    drawWithMana: async () => {
+      if (opts.role === 'host') {
+        if (!battle) return false
+        const ok = battle.drawWithMana('player')
+        if (ok) broadcastSnapshot()
+        return ok
+      }
+      sendIntent({ kind: 'draw_for_mana' })
+      return true
+    },
+    manaDraw: async () => {
+      if (opts.role === 'host') {
+        if (!battle) return false
+        const ok = battle.manaDraw('player')
+        if (ok) broadcastSnapshot()
+        return ok
+      }
+      sendIntent({ kind: 'draw_for_mana' })
+      return true
+    },
+    pay3ManaToDraw: async () => {
+      if (opts.role === 'host') {
+        if (!battle) return false
+        const ok = battle.pay3ManaToDraw('player')
+        if (ok) broadcastSnapshot()
+        return ok
+      }
+      sendIntent({ kind: 'draw_for_mana' })
+      return true
+    },
+    convertCard: async (card) => {
+      if (opts.role === 'host') {
+        if (!battle) return false
+        const ok = battle.convertCardToMana(card, 'player')
+        if (ok) broadcastSnapshot()
+        return ok
+      }
+      sendIntent({ kind: 'convert_card', cardId: card.id })
+      return true
+    },
+    convertToMana: async (card) => {
+      if (opts.role === 'host') {
+        if (!battle) return false
+        const ok = battle.convertToMana(card, 'player')
+        if (ok) broadcastSnapshot()
+        return ok
+      }
+      sendIntent({ kind: 'convert_card', cardId: card.id })
+      return true
+    },
+    burnCard: async (card) => {
+      if (opts.role === 'host') {
+        if (!battle) return false
+        const ok = battle.burnCard(card, 'player')
+        if (ok) broadcastSnapshot()
+        return ok
+      }
+      sendIntent({ kind: 'convert_card', cardId: card.id })
+      return true
     },
     endTurn: async () => {
       if (opts.role === 'host') {

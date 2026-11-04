@@ -75,6 +75,8 @@ const items = ref(
 
 // Enough columns to cover the viewport width at any size
 const columns = ref(6)
+const tutorialModalOpen = ref(false)
+
 function updateColumns() {
   const unit = 200 + 18
   columns.value = Math.max(5, Math.ceil((window.innerWidth * 1.4) / unit))
@@ -112,21 +114,45 @@ onUnmounted(() => {
     <!-- Foreground content -->
     <div class="relative z-10 min-h-screen flex flex-col">
       <header class="px-4 py-8 text-center">
-        <h1 class="text-3xl font-bold text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">Drift Wall</h1>
+        <h1 class="text-3xl font-bold text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">Big Combat</h1>
         <p class="text-sm text-white/70 mt-1 drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)]">
-          Endless drifting tile wall — background, no interaction
+          El tcg con el que Gino soñó
         </p>
       </header>
 
       <main class="flex-1 px-4 pb-28 flex items-end justify-center">
         <div class="max-w-md w-full mb-4 bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10 shadow-xl">
-          <h2 class="text-base font-semibold text-white mb-2">Ambient Background</h2>
+          <h2 class="text-base font-semibold text-white mb-2">Que estoy viendo?</h2>
           <p class="text-sm text-white/70">
-            The wall drifts continuously and ignores all pointer input — no hover, no clicks, no tilt.
-            It simply plays behind the content as a living backdrop.
+            Este es un tcg con cosas de otros, cosas propias y cosas que no sé de donde saqué.
+            Para saber más:
           </p>
+          <button
+            @click="tutorialModalOpen = true"
+            class="mt-3 w-full bg-white/10 hover:bg-white/20 text-white text-sm font-medium py-2 px-4 rounded-lg transition"
+          >
+            Tutorial
+          </button>
         </div>
       </main>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div v-if="tutorialModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click="tutorialModalOpen = false">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full mx-4 overflow-hidden shadow-2xl" @click.stop>
+        <div class="p-6">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Tutorial</h3>
+          <p class="text-gray-700 dark:text-gray-300">vos te pensas que voy a hacer un tutorial de como funciona esto?</p>
+        </div>
+        <div class="px-6 pb-6">
+          <button
+            @click="tutorialModalOpen = false"
+            class="w-full bg-red-500/80 hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
