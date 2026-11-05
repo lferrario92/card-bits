@@ -440,7 +440,7 @@ onUnmounted(() => {
       <div class="creatures-field relative flex-1 min-h-0 rounded-2xl border bg-white/70 dark:bg-gray-800/70 flex items-center justify-center gap-2 flex-wrap overflow-auto p-1.5 transition-colors"
         :class="state.phase === 'opponent' ? 'border-rose-400/70 ring-1 ring-rose-400/30' : 'border-gray-200 dark:border-gray-700'">
         <span v-if="state.opponentBoard.length > 4"
-          class="pointer-events-none absolute bottom-4 text-rose-500 text-lg animate-bounce z-10 left-0">⬇</span>
+          class="pointer-events-none absolute bottom-4 left-0 text-rose-500 text-lg animate-bounce z-10">⬇</span>
         <CreatureTile
           v-for="c in state.opponentBoard" :key="c.instanceId" :creature="c"
           :interactive="targeting" :targetable="targeting" @pick="onOpponentCreatureClick(c)" />
@@ -461,7 +461,7 @@ onUnmounted(() => {
       <div class="creatures-field relative flex-1 min-h-0 rounded-2xl border bg-white/70 dark:bg-gray-800/70 flex items-center justify-center gap-2 flex-wrap overflow-auto p-1.5 transition-colors"
         :class="isPlayerTurn ? 'border-emerald-400/70 ring-1 ring-emerald-400/30' : 'border-gray-200 dark:border-gray-700'">
         <span v-if="state.playerBoard.length > 4"
-          class="pointer-events-none absolute bottom-4 left-0 text-emerald-500 text-lg animate-bounce z-10 left-0">⬇</span>
+          class="pointer-events-none absolute bottom-4 left-0 text-emerald-500 text-lg animate-bounce z-10">⬇</span>
         <CreatureTile
           v-for="c in state.playerBoard" :key="c.instanceId" :creature="c"
           :interactive="isPlayerTurn"

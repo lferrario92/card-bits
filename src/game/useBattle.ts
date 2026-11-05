@@ -273,10 +273,21 @@ export function useBattle(config: BattleConfig) {
 
     for (const t of targets) {
       switch (effect.action) {
-        case 'damage':
+        case 'damage': {
+          const opponentSide: Side = caster === 'player' ? 'opponent' : 'player'
+          if (effect.target === 'opponent' && hasTaunt(opponentSide)) {
+            const tauntCreature = boardForSide(opponentSide).find(c => !!c.taunt && c.hp > 0)
+            if (tauntCreature) {
+              damageCreature(tauntCreature, value)
+              log(`${tauntCreature.card.title} — ${value} damage`)
+              cleanupDead()
+              break
+            }
+          }
           damage(t, value)
           log(`${t.name} — ${value} damage`)
           break
+        }
         case 'heal':
           heal(t, value)
           log(`${t.name} — +${value} HP`)
@@ -300,6 +311,7 @@ export function useBattle(config: BattleConfig) {
             shield: 0,
             canAttack: !!card.charge,
             summoningSick: !card.charge,
+            taunt: !!card.taunt,
           }
           if (caster === 'player') state.playerBoard = [...state.playerBoard, creature]
           else state.opponentBoard = [...state.opponentBoard, creature]
@@ -444,6 +456,7 @@ export function useBattle(config: BattleConfig) {
         // Charge lets a creature act immediately; otherwise it is summoning sick.
         canAttack: !!card.charge,
         summoningSick: !card.charge,
+        taunt: !!card.taunt,
       }
       if (side === 'player') state.playerBoard = [...state.playerBoard, creature]
       else state.opponentBoard = [...state.opponentBoard, creature]
@@ -526,6 +539,10 @@ export function useBattle(config: BattleConfig) {
    * Resolve a creature's attack. Returns true if the attack was performed.
    * The attacker must belong to the side whose turn it is and be ready.
    */
+  function hasTaunt(side: Side): boolean {
+    return boardForSide(side).some(c => !!c.taunt && c.hp > 0)
+  }
+
   function attack(attackerId: number, target: AttackTarget): boolean {
     if (state.winner) return false
     const attacker = findCreature(attackerId)
@@ -539,6 +556,7 @@ export function useBattle(config: BattleConfig) {
     const owner = possessive(subject(attacker.side))
 
     if (target.type === 'hero') {
+      if (hasTaunt(enemySide)) return false
       const hero = entityForSide(enemySide)
       attacker.canAttack = false
       damage(hero, attacker.attack)
@@ -549,6 +567,7 @@ export function useBattle(config: BattleConfig) {
 
     const victim = boardForSide(enemySide).find(c => c.instanceId === target.instanceId)
     if (!victim) return false
+    if (hasTaunt(enemySide) && !victim.taunt) return false
 
     attacker.canAttack = false
     damageCreature(victim, attacker.attack)

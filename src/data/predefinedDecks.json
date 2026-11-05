@@ -14,9 +14,9 @@
         "charge": true,
         "effects": [
           {
-            "target": "opponent",
+            "value": 1,
             "action": "damage",
-            "value": 1
+            "target": "opponent"
           }
         ],
         "rarity": "Common"
@@ -28,12 +28,15 @@
         "manaCost": 1,
         "effects": [
           {
-            "target": "opponent",
+            "value": 2,
             "action": "damage",
-            "value": 2
+            "target": "opponent"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Sabueso Furioso",
@@ -43,7 +46,8 @@
         "attack": 3,
         "health": 2,
         "effects": [],
-        "rarity": "Rare"
+        "rarity": "Rare",
+        "charge": false
       },
       {
         "name": "Ráfaga Lacerante",
@@ -52,17 +56,20 @@
         "manaCost": 2,
         "effects": [
           {
-            "target": "opponent",
+            "value": 4,
             "action": "damage",
-            "value": 4
+            "target": "opponent"
           },
           {
-            "target": "self",
+            "value": 1,
             "action": "damage",
-            "value": 1
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Tirador de Vanguardia",
@@ -72,7 +79,8 @@
         "attack": 4,
         "health": 2,
         "effects": [],
-        "rarity": "Rare"
+        "rarity": "Rare",
+        "charge": false
       },
       {
         "name": "Golpe Cero",
@@ -81,12 +89,15 @@
         "manaCost": 3,
         "effects": [
           {
-            "target": "opponent",
+            "value": 5,
             "action": "damage",
-            "value": 5
+            "target": "opponent"
           }
         ],
-        "rarity": "Epic"
+        "rarity": "Epic",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Sabueso Furioso",
@@ -96,7 +107,8 @@
         "attack": 3,
         "health": 2,
         "effects": [],
-        "rarity": "Rare"
+        "rarity": "Rare",
+        "charge": false
       },
       {
         "name": "Chispa Incendiaria",
@@ -105,12 +117,15 @@
         "manaCost": 1,
         "effects": [
           {
-            "target": "opponent",
+            "value": 2,
             "action": "damage",
-            "value": 2
+            "target": "opponent"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Duende Asaltante",
@@ -122,9 +137,9 @@
         "charge": true,
         "effects": [
           {
-            "target": "opponent",
+            "value": 1,
             "action": "damage",
-            "value": 1
+            "target": "opponent"
           }
         ],
         "rarity": "Common"
@@ -136,17 +151,20 @@
         "manaCost": 2,
         "effects": [
           {
-            "target": "opponent",
+            "value": 4,
             "action": "damage",
-            "value": 4
+            "target": "opponent"
           },
           {
-            "target": "self",
+            "value": 1,
             "action": "damage",
-            "value": 1
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       }
     ]
   },
@@ -164,12 +182,14 @@
         "health": 4,
         "effects": [
           {
-            "target": "self",
+            "value": 2,
             "action": "shield",
-            "value": 2
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "charge": false,
+        "taunt": true
       },
       {
         "name": "Barrera Absoluta",
@@ -178,12 +198,15 @@
         "manaCost": 2,
         "effects": [
           {
-            "target": "self",
+            "value": 5,
             "action": "shield",
-            "value": 5
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Bendición de Vida",
@@ -192,12 +215,20 @@
         "manaCost": 3,
         "effects": [
           {
-            "target": "self",
+            "value": 4,
             "action": "heal",
-            "value": 6
+            "target": "self"
+          },
+          {
+            "value": 1,
+            "action": "draw",
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Purga de Fuego",
@@ -206,12 +237,15 @@
         "manaCost": 4,
         "effects": [
           {
-            "target": "opponent",
+            "value": 4,
             "action": "damage",
-            "value": 4
+            "target": "opponent"
           }
         ],
-        "rarity": "Rare"
+        "rarity": "Rare",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Coloso de Piedra",
@@ -222,12 +256,14 @@
         "health": 8,
         "effects": [
           {
-            "target": "self",
+            "value": 3,
             "action": "shield",
-            "value": 3
+            "target": "self"
           }
         ],
-        "rarity": "Epic"
+        "rarity": "Epic",
+        "charge": false,
+        "taunt": true
       },
       {
         "name": "Dragón de Asedio",
@@ -238,12 +274,13 @@
         "health": 7,
         "effects": [
           {
-            "target": "opponent",
+            "value": 5,
             "action": "damage",
-            "value": 5
+            "target": "opponent"
           }
         ],
-        "rarity": "Legendary"
+        "rarity": "Legendary",
+        "charge": false
       },
       {
         "name": "Escudero Guardián",
@@ -254,12 +291,14 @@
         "health": 4,
         "effects": [
           {
-            "target": "self",
+            "value": 2,
             "action": "shield",
-            "value": 2
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "charge": false,
+        "taunt": true
       },
       {
         "name": "Barrera Absoluta",
@@ -268,12 +307,15 @@
         "manaCost": 2,
         "effects": [
           {
-            "target": "self",
+            "value": 5,
             "action": "shield",
-            "value": 5
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Bendición de Vida",
@@ -282,12 +324,20 @@
         "manaCost": 3,
         "effects": [
           {
-            "target": "self",
+            "value": 4,
             "action": "heal",
-            "value": 6
+            "target": "self"
+          },
+          {
+            "value": 1,
+            "action": "draw",
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Coloso de Piedra",
@@ -298,12 +348,14 @@
         "health": 8,
         "effects": [
           {
-            "target": "self",
+            "value": 3,
             "action": "shield",
-            "value": 3
+            "target": "self"
           }
         ],
-        "rarity": "Epic"
+        "rarity": "Epic",
+        "charge": false,
+        "taunt": true
       }
     ]
   },
@@ -320,7 +372,8 @@
         "attack": 1,
         "health": 3,
         "effects": [],
-        "rarity": "Common"
+        "rarity": "Common",
+        "charge": false
       },
       {
         "name": "Oso de la Comarca",
@@ -330,7 +383,8 @@
         "attack": 2,
         "health": 3,
         "effects": [],
-        "rarity": "Common"
+        "rarity": "Common",
+        "charge": false
       },
       {
         "name": "Caballero Veterano",
@@ -340,7 +394,8 @@
         "attack": 3,
         "health": 4,
         "effects": [],
-        "rarity": "Rare"
+        "rarity": "Rare",
+        "charge": false
       },
       {
         "name": "Campeón de la Arena",
@@ -350,7 +405,8 @@
         "attack": 4,
         "health": 5,
         "effects": [],
-        "rarity": "Rare"
+        "rarity": "Rare",
+        "charge": false
       },
       {
         "name": "Éxito Táctico",
@@ -359,17 +415,20 @@
         "manaCost": 3,
         "effects": [
           {
-            "target": "self",
-            "action": "heal",
-            "value": 3
+            "value": 3,
+            "action": "shield",
+            "target": "self"
           },
           {
-            "target": "self",
-            "action": "shield",
-            "value": 2
+            "value": 1,
+            "action": "draw",
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Elemental de Fuego",
@@ -380,12 +439,13 @@
         "health": 5,
         "effects": [
           {
-            "target": "opponent",
+            "value": 2,
             "action": "damage",
-            "value": 2
+            "target": "opponent"
           }
         ],
-        "rarity": "Epic"
+        "rarity": "Epic",
+        "charge": false
       },
       {
         "name": "Oso de la Comarca",
@@ -395,7 +455,8 @@
         "attack": 2,
         "health": 3,
         "effects": [],
-        "rarity": "Common"
+        "rarity": "Common",
+        "charge": false
       },
       {
         "name": "Caballero Veterano",
@@ -405,7 +466,8 @@
         "attack": 3,
         "health": 4,
         "effects": [],
-        "rarity": "Rare"
+        "rarity": "Rare",
+        "charge": false
       },
       {
         "name": "Éxito Táctico",
@@ -414,17 +476,20 @@
         "manaCost": 3,
         "effects": [
           {
-            "target": "self",
-            "action": "heal",
-            "value": 3
+            "value": 3,
+            "action": "shield",
+            "target": "self"
           },
           {
-            "target": "self",
-            "action": "shield",
-            "value": 2
+            "value": 1,
+            "action": "draw",
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Guerrero Novato",
@@ -434,7 +499,8 @@
         "attack": 1,
         "health": 3,
         "effects": [],
-        "rarity": "Common"
+        "rarity": "Common",
+        "charge": false
       }
     ]
   },
@@ -452,12 +518,13 @@
         "health": 2,
         "effects": [
           {
-            "target": "self",
+            "value": 1,
             "action": "summon",
-            "value": 1
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "charge": false
       },
       {
         "name": "Fisión de Átomos",
@@ -466,17 +533,20 @@
         "manaCost": 1,
         "effects": [
           {
-            "target": "opponent",
+            "value": 1,
             "action": "damage",
-            "value": 1
+            "target": "opponent"
           },
           {
-            "target": "self",
+            "value": 1,
             "action": "add_copy",
-            "value": 1
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Catalizador de Enjambre",
@@ -485,8 +555,16 @@
         "manaCost": 3,
         "attack": 2,
         "health": 3,
-        "effects": [],
-        "rarity": "Rare"
+        "effects": [
+          {
+            "value": 1,
+            "action": "buff_board",
+            "target": "self",
+            "statTarget": "both"
+          }
+        ],
+        "rarity": "Rare",
+        "charge": false
       },
       {
         "name": "Micro-Chispa",
@@ -495,12 +573,15 @@
         "manaCost": 1,
         "effects": [
           {
-            "target": "opponent",
+            "value": 1,
             "action": "damage",
-            "value": 1
+            "target": "opponent"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Ocurrencia Resonance",
@@ -511,13 +592,14 @@
         "health": 2,
         "effects": [
           {
-            "target": "opponent",
-            "action": "damage",
             "value": 1,
+            "action": "damage",
+            "target": "opponent",
             "scaleBy": "cardsPlayedThisTurn"
           }
         ],
-        "rarity": "Epic"
+        "rarity": "Epic",
+        "charge": false
       },
       {
         "name": "Enjambre Furioso",
@@ -526,17 +608,22 @@
         "manaCost": 2,
         "effects": [
           {
-            "target": "opponent",
+            "value": 1,
             "action": "damage",
-            "value": 2
+            "target": "opponent",
+            "scaleBy": "boardCount",
+            "scaleTarget": "self"
           },
           {
-            "target": "self",
-            "action": "heal",
-            "value": 2
+            "value": 1,
+            "action": "draw",
+            "target": "self"
           }
         ],
-        "rarity": "Rare"
+        "rarity": "Rare",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Fisión de Átomos",
@@ -545,17 +632,20 @@
         "manaCost": 1,
         "effects": [
           {
-            "target": "opponent",
+            "value": 1,
             "action": "damage",
-            "value": 1
+            "target": "opponent"
           },
           {
-            "target": "self",
+            "value": 1,
             "action": "add_copy",
-            "value": 1
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Micro-Chispa",
@@ -564,12 +654,15 @@
         "manaCost": 1,
         "effects": [
           {
-            "target": "opponent",
+            "value": 1,
             "action": "damage",
-            "value": 1
+            "target": "opponent"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Célula Replicante",
@@ -580,12 +673,13 @@
         "health": 2,
         "effects": [
           {
-            "target": "self",
+            "value": 1,
             "action": "summon",
-            "value": 1
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "charge": false
       },
       {
         "name": "Catalizador de Enjambre",
@@ -594,8 +688,16 @@
         "manaCost": 3,
         "attack": 2,
         "health": 3,
-        "effects": [],
-        "rarity": "Rare"
+        "effects": [
+          {
+            "value": 1,
+            "action": "buff_board",
+            "target": "self",
+            "statTarget": "both"
+          }
+        ],
+        "rarity": "Rare",
+        "charge": false
       }
     ]
   },
@@ -611,12 +713,15 @@
         "manaCost": 2,
         "effects": [
           {
-            "target": "self",
+            "value": 5,
             "action": "heal",
-            "value": 5
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Escudo Mágico Neutral",
@@ -625,12 +730,15 @@
         "manaCost": 1,
         "effects": [
           {
-            "target": "self",
+            "value": 3,
             "action": "shield",
-            "value": 3
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Mercenario Errante",
@@ -639,8 +747,15 @@
         "manaCost": 3,
         "attack": 3,
         "health": 3,
-        "effects": [],
-        "rarity": "Common"
+        "effects": [
+          {
+            "value": 1,
+            "action": "draw",
+            "target": "self"
+          }
+        ],
+        "rarity": "Common",
+        "charge": false
       },
       {
         "name": "Proyectil Arcano Neutral",
@@ -649,12 +764,15 @@
         "manaCost": 2,
         "effects": [
           {
-            "target": "opponent",
+            "value": 3,
             "action": "damage",
-            "value": 3
+            "target": "opponent"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Centinela de Piedra",
@@ -665,12 +783,14 @@
         "health": 6,
         "effects": [
           {
-            "target": "self",
+            "value": 1,
             "action": "shield",
-            "value": 1
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "charge": false,
+        "taunt": true
       },
       {
         "name": "Dragón Ancestral Neutral",
@@ -681,12 +801,13 @@
         "health": 6,
         "effects": [
           {
-            "target": "opponent",
+            "value": 3,
             "action": "damage",
-            "value": 3
+            "target": "opponent"
           }
         ],
-        "rarity": "Legendary"
+        "rarity": "Legendary",
+        "charge": false
       },
       {
         "name": "Escudo Mágico Neutral",
@@ -695,12 +816,15 @@
         "manaCost": 1,
         "effects": [
           {
-            "target": "self",
+            "value": 3,
             "action": "shield",
-            "value": 3
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Mercenario Errante",
@@ -709,8 +833,15 @@
         "manaCost": 3,
         "attack": 3,
         "health": 3,
-        "effects": [],
-        "rarity": "Common"
+        "effects": [
+          {
+            "value": 1,
+            "action": "draw",
+            "target": "self"
+          }
+        ],
+        "rarity": "Common",
+        "charge": false
       },
       {
         "name": "Proyectil Arcano Neutral",
@@ -719,12 +850,15 @@
         "manaCost": 2,
         "effects": [
           {
-            "target": "opponent",
+            "value": 3,
             "action": "damage",
-            "value": 3
+            "target": "opponent"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       },
       {
         "name": "Poción de Curación Base",
@@ -733,12 +867,15 @@
         "manaCost": 2,
         "effects": [
           {
-            "target": "self",
+            "value": 5,
             "action": "heal",
-            "value": 5
+            "target": "self"
           }
         ],
-        "rarity": "Common"
+        "rarity": "Common",
+        "attack": 0,
+        "health": 0,
+        "charge": true
       }
     ]
   }

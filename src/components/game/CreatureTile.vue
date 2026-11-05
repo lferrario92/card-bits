@@ -37,6 +37,7 @@ defineEmits<{ pick: [] }>()
       class="relative rounded-lg overflow-hidden border-2 transition-all duration-200"
       :class="[
         creature.side === 'player' ? 'border-emerald-500/70' : 'border-rose-500/70',
+        creature.taunt ? 'ring-2 ring-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.8)]' : '',
         selected ? 'border-primary ring-2 ring-primary scale-105 shadow-lg' : '',
         ready && !selected ? 'ring-2 ring-amber-400/80 shadow-[0_0_10px_rgba(251,191,36,0.7)]' : '',
         !creature.canAttack ? 'opacity-70 grayscale-[0.35]' : '',
@@ -63,6 +64,12 @@ defineEmits<{ pick: [] }>()
         class="absolute top-0 left-0 min-w-4 h-4 px-1 flex items-center justify-center rounded-br-md bg-indigo-500 text-white text-[9px] font-bold shadow"
         title="Charge: can attack immediately">
         ⚡
+      </span>
+      <!-- taunt keyword -->
+      <span v-if="creature.taunt"
+        class="absolute top-0 left-6 min-w-4 h-4 px-1 flex items-center justify-center rounded-br-md bg-amber-500 text-white text-[9px] font-bold shadow"
+        title="Taunt: must be targeted first">
+        🛡
       </span>
       <!-- summoning sickness -->
       <span v-if="!creature.canAttack"

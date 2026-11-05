@@ -57,6 +57,7 @@ export interface CardData {
    * instead of waiting a full turn (summoning sickness).
    */
   charge?: boolean
+  taunt?: boolean
   /** Combined effects, executed in order. For creatures these are on-play effects. */
   effects: CardEffect[]
 }
@@ -89,6 +90,8 @@ export interface BoardCreature {
   canAttack: boolean
   /** True until its controller's next turn (unless it has Charge). */
   summoningSick: boolean
+  /** Taunt: must be targeted first. */
+  taunt?: boolean
 }
 
 /** Where a creature attack can be directed. */

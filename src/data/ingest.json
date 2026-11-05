@@ -39,15 +39,20 @@
       "health": 0,
       "effects": [
         {
-          "value": 6,
+          "value": 4,
           "action": "heal",
+          "target": "self"
+        },
+        {
+          "value": 1,
+          "action": "draw",
           "target": "self"
         }
       ],
       "manaCost": 3
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T04:30:31.014442+00:00"
+    "updated_at": "2026-11-04T04:03:44.022338+00:00"
   },
   {
     "id": "e8d468b5-79f7-4d40-b17f-2ca3b9849a48",
@@ -100,11 +105,18 @@
       "attack": 2,
       "charge": false,
       "health": 3,
-      "effects": [],
+      "effects": [
+        {
+          "value": 1,
+          "action": "buff_board",
+          "target": "self",
+          "statTarget": "both"
+        }
+      ],
       "manaCost": 3
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-11-01T02:01:25.552589+00:00"
+    "updated_at": "2026-11-04T13:50:20.067712+00:00"
   },
   {
     "id": "e407a5ce-98a2-4225-874c-6c668eac57c3",
@@ -141,6 +153,7 @@
     "tcg_available": true,
     "tcg_combat_data": {
       "type": "creature",
+      "taunt": true,
       "attack": 2,
       "charge": false,
       "health": 6,
@@ -154,7 +167,7 @@
       "manaCost": 4
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:23:14.180252+00:00"
+    "updated_at": "2026-11-05T03:43:22.712178+00:00"
   },
   {
     "id": "337273ca-9d30-4fcf-9727-3fce71c2a010",
@@ -191,6 +204,7 @@
     "tcg_available": true,
     "tcg_combat_data": {
       "type": "creature",
+      "taunt": true,
       "attack": 5,
       "charge": false,
       "health": 8,
@@ -204,7 +218,7 @@
       "manaCost": 6
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:25:28.011148+00:00"
+    "updated_at": "2026-11-05T03:43:22.712178+00:00"
   },
   {
     "id": "d30c5f14-bea4-4785-a102-9bca795b99fe",
@@ -321,20 +335,22 @@
       "health": 0,
       "effects": [
         {
-          "value": 2,
+          "value": 1,
           "action": "damage",
-          "target": "opponent"
+          "target": "opponent",
+          "scaleBy": "boardCount",
+          "scaleTarget": "self"
         },
         {
-          "value": 2,
-          "action": "heal",
+          "value": 1,
+          "action": "draw",
           "target": "self"
         }
       ],
       "manaCost": 2
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:29:12.226255+00:00"
+    "updated_at": "2026-11-04T20:33:46.445192+00:00"
   },
   {
     "id": "c6683487-963d-4d18-bd2f-e6f6ff3c398f",
@@ -346,6 +362,7 @@
     "tcg_available": true,
     "tcg_combat_data": {
       "type": "creature",
+      "taunt": true,
       "attack": 1,
       "charge": false,
       "health": 4,
@@ -359,7 +376,7 @@
       "manaCost": 2
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:30:45.093575+00:00"
+    "updated_at": "2026-11-05T03:43:22.712178+00:00"
   },
   {
     "id": "3e221f33-51e7-4c6d-89c1-70ce849792bf",
@@ -402,19 +419,19 @@
       "effects": [
         {
           "value": 3,
-          "action": "heal",
+          "action": "shield",
           "target": "self"
         },
         {
-          "value": 2,
-          "action": "shield",
+          "value": 1,
+          "action": "draw",
           "target": "self"
         }
       ],
       "manaCost": 3
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:31:55.657502+00:00"
+    "updated_at": "2026-11-04T04:03:44.022338+00:00"
   },
   {
     "id": "85a9eb63-ffb5-4b1e-b3ec-e3eeb8bbdf61",
@@ -503,11 +520,17 @@
       "attack": 3,
       "charge": false,
       "health": 3,
-      "effects": [],
+      "effects": [
+        {
+          "value": 1,
+          "action": "draw",
+          "target": "self"
+        }
+      ],
       "manaCost": 3
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:33:53.910109+00:00"
+    "updated_at": "2026-11-04T04:03:44.022338+00:00"
   },
   {
     "id": "40eee974-da17-4141-bf3a-6403249d6200",

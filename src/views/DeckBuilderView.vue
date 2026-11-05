@@ -23,7 +23,6 @@ const {
   MAX_CARDS,
   MIN_CARDS,
   MAX_COPIES,
-  canUseDeck,
 } = useDecks()
 
 const { user } = useAuth()
@@ -38,11 +37,6 @@ const viewMode = ref<'menu' | 'predefined' | 'custom'>('menu')
 // Card modal state
 const selectedCard = ref<any>(null)
 const cardModalOpen = ref(false)
-
-// Convert user cards to CardTemplate for deck building
-const pool = computed(() => {
-  return userCards.value.map(dbCard => dbCardToTemplate(dbCard.cards))
-})
 
 const editingId = ref<string | null>(null)
 const nameInput = ref('')
@@ -381,14 +375,14 @@ function closeCardModal() {
       </div>
 
       <div class="flex items-center gap-2 mt-2">
-        <button v-if="!isCurrent(editingDeck.id)" @click="selectCurrent(editingDeck.id)"
+        <button v-if="editingDeck && !isCurrent(editingDeck.id)" @click="selectCurrent(editingDeck.id)"
           class="flex-1 py-2 rounded-lg bg-primary text-white text-xs font-bold active:scale-[0.98] transition">
           Use as current deck
         </button>
-        <div v-else class="flex-1 py-2 rounded-lg bg-primary/10 text-primary text-xs font-bold text-center">
+        <div v-else-if="editingDeck" class="flex-1 py-2 rounded-lg bg-primary/10 text-primary text-xs font-bold text-center">
           ✓ Current deck
         </div>
-        <button @click="renameDeck(editingDeck.id, nameInput)"
+        <button v-if="editingDeck" @click="renameDeck(editingDeck.id, nameInput)"
           class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-semibold border border-gray-200 dark:border-gray-700">
           Save name
         </button>
@@ -403,12 +397,12 @@ function closeCardModal() {
           <span class="text-[11px] text-gray-400 dark:text-gray-500">{{ MIN_CARDS }}-{{ MAX_CARDS }} cards · max {{ MAX_COPIES }} copies</span>
         </div>
 
-        <div v-if="editingDeck.cards.length === 0"
+        <div v-if="editingDeck && editingDeck.cards.length === 0"
           class="rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 py-8 text-center text-xs text-gray-400 dark:text-gray-500">
           Empty deck — add cards from the library below.
         </div>
 
-        <div v-else class="flex gap-2 overflow-x-auto pb-2">
+        <div v-else-if="editingDeck" class="flex gap-2 overflow-x-auto pb-2">
           <div v-for="g in deckGroups" :key="g.card.title" class="flex-shrink-0 relative">
             <button
               @click="removeCard(editingDeck.id, g.card)"
@@ -437,7 +431,7 @@ function closeCardModal() {
             <button
               v-for="userCard in userCards"
               :key="userCard.id"
-              @click="addCard(editingDeck.id, dbCardToTemplate(userCard.cards))"
+              @click="editingDeck && addCard(editingDeck.id, dbCardToTemplate(userCard.cards))"
               :disabled="!canAdd(dbCardToTemplate(userCard.cards))"
               class="relative active:scale-[0.97] transition"
               :class="!canAdd(dbCardToTemplate(userCard.cards)) ? 'opacity-45' : ''"

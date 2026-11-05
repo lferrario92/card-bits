@@ -36,6 +36,7 @@ export interface TcgCombatData {
   attack?: number
   health?: number
   charge?: boolean
+  taunt?: boolean
   effects: Array<{
     target: EffectTarget
     action: 'damage' | 'heal' | 'shield' | 'summon' | 'add_copy' | 'draw' | 'buff_board'
@@ -184,6 +185,7 @@ export function dbCardToTemplate(dbCard: DbOpenedCard | DbUserCard['cards']): Ca
     health: combatData?.health,
     rarity: dbCard.rarity ?? 'Common',
     charge: combatData?.charge,
+    taunt: combatData?.taunt,
     effects: combatData?.effects ?? []
   }
 }

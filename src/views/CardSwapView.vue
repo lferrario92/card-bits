@@ -2,8 +2,9 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, defineComponent, h } from 'vue'
 import { gsap } from 'gsap'
 import { addTemplates } from '@/game/collection'
+import TcgCard from '@/components/TcgCard.vue'
 import type { CardTemplate } from '@/game/types'
-import { fetchAvailableBoosters, openBooster, dbCardToTemplate, type DbBooster } from '@/lib/supabase'
+import { fetchAvailableBoosters, openBooster, dbCardToTemplate, type DbBooster, supabase } from '@/lib/supabase'
 import { useAuth } from '@/composables/useAuth'
 
 // Proper Card component that forwards ref to the root element
@@ -190,8 +191,22 @@ async function openPack(booster: DbBooster) {
   try {
     const result = await openBooster(userId, booster.id)
 
+    // The booster RPC may omit tcg_combat_data; fetch it so cards show their stats.
+    const openedCards = result.cards ?? []
+    const ids = [...new Set(openedCards.map((c) => c.id))]
+    if (ids.length > 0) {
+      const { data: combatRows } = await supabase
+        .from('cards')
+        .select('id, tcg_combat_data')
+        .in('id', ids)
+      const combatMap = new Map((combatRows ?? []).map((r: any) => [r.id, r.tcg_combat_data]))
+      for (const c of openedCards) {
+        if (!c.tcg_combat_data) c.tcg_combat_data = combatMap.get(c.id) ?? null
+      }
+    }
+
     // Map the real opened cards into templates using the new helper function
-    const templates: CardTemplate[] = (result.cards ?? []).map((c) => dbCardToTemplate(c))
+    const templates: CardTemplate[] = openedCards.map((c) => dbCardToTemplate(c))
 
     if (templates.length === 0) {
       openError.value = 'The booster contained no cards.'
@@ -297,10 +312,9 @@ async function swapTopToBack() {
 async function fanOutAndReturnToMarket() {
   isAnimating.value = true
   state.value = 'opening'
-  
+
   const cards = getCardElements()
-  const total = cards.length
-  
+
   const tl = gsap.timeline({
     onComplete: () => {
       isAnimating.value = false
@@ -392,7 +406,7 @@ async function showGrid() {
 function handleCardClick(idx: number) {
   if (state.value === 'stack') {
     // Only allow clicking the top card
-    if (!isAnimating.value && order[0] === idx) {
+    if (!isAnimating.value && order.value[0] === idx) {
       swapTopToBack()
     }
   }
@@ -401,8 +415,8 @@ function handleCardClick(idx: number) {
 function handleContainerClick() {
   if (state.value === 'market') {
     // In market, open the standard pack (or could use last selected)
-    if (!isAnimating.value) {
-      openPack(currentPackSize.value)
+    if (!isAnimating.value && boosters.value.length > 0) {
+      openPack(boosters.value[0])
     }
   } else if (state.value === 'stack') {
     if (!isAnimating.value) {
@@ -424,7 +438,7 @@ function handleReset() {
   selectedBooster.value = null
 }
 
-const getTopCardIndex = computed(() => order[0])
+const getTopCardIndex = computed(() => order.value[0])
 
 // Full-screen reveal mode: while a pack is opening, being revealed, or fanned
 // out, hide the market behind an immersive layer so the focus stays on cards.
@@ -435,12 +449,12 @@ const getStateText = computed(() => {
   if (state.value === 'grid') return 'All cards revealed! Click anywhere to open pack.'
   if (state.value === 'opening') return 'Opening pack...'
   if (isAnimating.value) return 'Animating...'
-  return `Click top card (Card #${getTopCardIndex.value + 1}) — ${seenCards.size} of ${packCards.value.length} revealed`
+  return `Click top card (Card #${getTopCardIndex.value + 1}) — ${seenCards.value.size} of ${packCards.value.length} revealed`
 })
 
 const getProgressText = computed(() => {
   if (state.value === 'stack') {
-    return `${seenCards.size} / ${packCards.value.length} revealed`
+    return `${seenCards.value.size} / ${packCards.value.length} revealed`
   }
   return ''
 })
@@ -525,11 +539,22 @@ onUnmounted(() => {
               :key="booster.id"
               @click="openPack(booster)"
               :disabled="isAnimating"
-              :style="{ backgroundImage: `url(${booster.cover_image || 'https://via.placeholder.com/150'})` }"
-              class="w-48 h-72 rounded-xl font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex flex-col items-center justify-between gap-1 text-base bg-cover bg-center hover:scale-105"
+              class="w-48 h-72 rounded-xl relative font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex flex-col items-center justify-between gap-1 text-base bg-cover bg-center hover:scale-105"
             >
+              <!-- :style="{ backgroundImage: `url(${booster.cover_image || 'https://via.placeholder.com/150'})` }"
+               -->
+              <img
+                :src="booster.cover_image || 'https://via.placeholder.com/150'"
+                alt=""
+                class="w-[calc(100%-1rem)] left-2 right-2 object-cover absolute inset-0 bottom-2 top-2 h-[calc(100%-2rem)]"
+              />
+              <img
+                :src="'/booster_transparent.png'"
+                alt=""
+                class="w-full h-full object-cover absolute inset-0"
+              />
               <!--  -->
-              <span class="bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.name }}</span>
+              <span v-if="false" class="bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.name }}</span>
               <span class="text-xs bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.card_count }} cards · {{ booster.price }} credits</span>
             </button>
           </div>
@@ -546,8 +571,8 @@ onUnmounted(() => {
               class="relative w-40 h-56 rounded-2xl bg-cover bg-center border border-white/25 shadow-2xl flex flex-col items-center justify-end gap-3 pb-4 [transform-style:preserve-3d] [will-change:transform]"
               style="opacity: 0;"
             >
-              <span class="text-6xl drop-shadow-lg" aria-hidden="true">{{ pendingIcon }}</span>
-              <span class="bg-black/60 px-3 py-1 rounded-lg backdrop-blur-sm text-white text-sm font-bold tracking-[0.2em]">{{ selectedBooster?.name || 'BOOSTER' }}</span>
+              <span v-if="false" class="text-6xl drop-shadow-lg" aria-hidden="true">{{ pendingIcon }}</span>
+              <span v-if="false" class="bg-black/60 px-3 py-1 rounded-lg backdrop-blur-sm text-white text-sm font-bold tracking-[0.2em]">{{ selectedBooster?.name || 'BOOSTER' }}</span>
             </div>
           </div>
 
@@ -565,21 +590,9 @@ onUnmounted(() => {
               >
                 <div class="w-full h-full relative">
                   <!-- Card face -->
-                  <div class="absolute inset-0 rounded-2xl overflow-hidden" style="backface-visibility: hidden;">
-                    <img :src="card.image" :alt="card.title" class="w-full h-full object-cover" draggable="false" />
-                    <span class="absolute top-2 left-2 min-w-7 h-7 px-1.5 flex items-center justify-center rounded-full bg-indigo-600 text-white text-xs font-bold shadow-lg">{{ card.manaCost }}</span>
-                    <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/50 text-white text-[10px] font-semibold">{{ card.rarity ?? 'Common' }}</span>
-                    <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/85 to-transparent">
-                      <div class="text-white font-bold text-sm">{{ card.title }}</div>
-                      <div class="flex items-center gap-2 mt-1">
-                        <span class="text-[11px] text-white/70">{{ card.type === 'creature' ? 'Creature' : 'Spell' }}</span>
-                        <template v-if="card.type === 'creature'">
-                          <span class="px-1.5 py-0.5 rounded bg-amber-500 text-white text-[10px] font-bold">{{ card.attack ?? 0 }}</span>
-                          <span class="px-1.5 py-0.5 rounded bg-rose-500 text-white text-[10px] font-bold">{{ card.health ?? 0 }}</span>
-                        </template>
-                        <span v-if="seenCards.has(idx) && state === 'stack'" class="ml-auto text-[10px] text-green-300 font-semibold">✓ Revealed</span>
-                      </div>
-                    </div>
+                  <div class="absolute inset-0 rounded-2xl overflow-hidden border-6" style="backface-visibility: hidden;" :style="{ borderColor: rarityColor(card.rarity) }">
+                    <TcgCard :card="card" :fill="true" :compact="true" :show-count="false" />
+                    <span v-if="seenCards.has(idx) && state === 'stack'" class="absolute bottom-2 right-2 text-[10px] text-green-300 font-semibold bg-black/50 px-2 py-0.5 rounded">✓ Revealed</span>
                   </div>
 
                   <!-- Rarity-colored top border / highlight for the top card -->
@@ -602,37 +615,6 @@ onUnmounted(() => {
                class="absolute bottom-6 left-0 right-0 text-center text-sm font-medium text-gray-300 pointer-events-none animate-pulse">
               Click anywhere to continue
             </p>
-          </div>
-        </div>
-
-        <!-- Instructions -->
-        <div class="mt-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-gray-200 dark:border-gray-700">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">How to Play</h2>
-          <div class="grid gap-3 md:grid-cols-3 text-sm">
-            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-              <h3 class="font-medium text-gray-900 dark:text-white mb-2">1. Market</h3>
-              <ul class="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-                <li>• Start here - no cards visible</li>
-                <li>• Pick a pack size (3, 5, or 6)</li>
-                <li>• Pack spawns as a stack</li>
-              </ul>
-            </div>
-            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-              <h3 class="font-medium text-gray-900 dark:text-white mb-2">2. Reveal</h3>
-              <ul class="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-                <li>• Click TOP card to reveal</li>
-                <li>• Card slides to back</li>
-                <li>• Repeat until all seen</li>
-              </ul>
-            </div>
-            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-              <h3 class="font-medium text-gray-900 dark:text-white mb-2">3. Fan Out → Market</h3>
-              <ul class="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-                <li>• All seen → fan out & disappear</li>
-                <li>• Returns to Market</li>
-                <li>• Pick another pack</li>
-              </ul>
-            </div>
           </div>
         </div>
       </div>
