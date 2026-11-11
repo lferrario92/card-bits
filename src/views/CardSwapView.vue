@@ -567,10 +567,19 @@ onUnmounted(() => {
             <div class="absolute w-72 h-72 rounded-full bg-primary/30 blur-3xl" aria-hidden="true"></div>
             <div
               ref="boosterRef"
-              :style="{ backgroundImage: 'url(/booster_pack.jpg)' }"
-              class="relative w-40 h-56 rounded-2xl bg-cover bg-center border border-white/25 shadow-2xl flex flex-col items-center justify-end gap-3 pb-4 [transform-style:preserve-3d] [will-change:transform]"
+              class="relative w-40 h-56 rounded-xl border border-white/25 shadow-2xl flex flex-col items-center justify-end gap-3 pb-4 [transform-style:preserve-3d] [will-change:transform]"
               style="opacity: 0;"
             >
+              <img
+                :src="selectedBooster?.cover_image || 'https://via.placeholder.com/150'"
+                alt=""
+                class="w-[calc(100%-1rem)] left-2 right-2 object-cover absolute inset-0 bottom-2 top-2 h-[calc(100%-2rem)]"
+              />
+              <img
+                :src="'/booster_transparent.png'"
+                alt=""
+                class="w-full h-full object-cover absolute inset-0"
+              />
               <span v-if="false" class="text-6xl drop-shadow-lg" aria-hidden="true">{{ pendingIcon }}</span>
               <span v-if="false" class="bg-black/60 px-3 py-1 rounded-lg backdrop-blur-sm text-white text-sm font-bold tracking-[0.2em]">{{ selectedBooster?.name || 'BOOSTER' }}</span>
             </div>
