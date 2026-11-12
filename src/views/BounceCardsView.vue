@@ -5,7 +5,6 @@ import CreatureTile from '@/components/game/CreatureTile.vue'
 import BattleOverlay from '@/components/game/BattleOverlay.vue'
 import BattleLog from '@/components/game/BattleLog.vue'
 import { createAiController, useOnlineController, type BattleController, type LocalDeck } from '@/composables/useBattleController'
-import { STARTER_CARDS } from '@/game/cards'
 import { getSelectedEnemy } from '@/game/enemies'
 import { useDecks } from '@/game/useDecks'
 
@@ -18,12 +17,13 @@ const route = useRoute()
 
 const { currentDeck, currentDeckTemplates } = useDecks()
 
-// The battle uses the deck selected in the deck builder (falling back to the
-// starter deck when the current deck has no cards yet).
-const playerDeck: LocalDeck = (() => {
-  const current = currentDeckTemplates()
-  return { templates: current.length > 0 ? current : [...STARTER_CARDS], name: currentDeck.value?.name ?? 'Starter Deck' }
-})()
+// The battle uses the deck the player built in the deck builder. There is no
+// built-in preset any more — the router sends deckless players to /decks
+// before they can reach this view (see main.ts).
+const playerDeck: LocalDeck = {
+  templates: currentDeckTemplates(),
+  name: currentDeck.value?.name ?? 'Your Deck',
+}
 
 // --- Mode: online (PvP) when the lobby handed us a code, else VS AI ---
 const onlineCode = typeof route.query.code === 'string' ? route.query.code : ''
@@ -127,6 +127,7 @@ watch(() => state.value.lastBattleEvent?.seq, (seq, prev) => {
 const busy = computed(() => controller.busy.value)
 const isPlayerTurn = computed(() => controller.isPlayerTurn.value)
 const isOver = computed(() => controller.isOver.value)
+const reward = computed(() => controller.reward.value)
 const canDraw = computed(() => controller.canDraw.value)
 const playerTurnLabel = computed(() => controller.playerTurnLabel.value)
 
@@ -250,10 +251,19 @@ function onReset() {
   else playerReset()
 }
 
+// End-game modal navigation.
+function onMenu() {
+  router.push('/drift-wall')
+}
+
+function onDeckbuilder() {
+  router.push('/decks')
+}
+
 // --- Card sizing / layout ---
 const containerWidth = ref(0)
 const containerHeight = ref(170)
-const fallbackWidth = ref(typeof window !== 'undefined' ? window.innerWidth - 60 : 375)
+const fallbackWidth = ref(typeof window !== 'undefined' ? Math.min(window.innerWidth, 450) - 60 : 375)
 
 const effectiveContainerWidth = computed(() => containerWidth.value || fallbackWidth.value)
 
@@ -301,8 +311,8 @@ const resetSizes = () => {
 
 const updateContainerWidth = () => {
   const el = document.querySelector('.bounce-container')
-  if (el) containerWidth.value = Math.min(el.clientWidth, window.innerWidth - 60)
-  fallbackWidth.value = window.innerWidth - 60
+  if (el) containerWidth.value = Math.min(el.clientWidth, Math.min(window.innerWidth, 450) - 60)
+  fallbackWidth.value = Math.min(window.innerWidth, 450) - 60
   // Keep the whole screen scroll-free on short viewports
   const h = window.innerHeight
   containerHeight.value = h < 640 ? 340 : h < 720 ? 400 : 460
@@ -329,7 +339,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-30 flex flex-col overflow-hidden overscroll-contain select-none bg-white dark:bg-gray-900">
+  <!-- Capped to the app's 450px column and centered; the -translate-x-1/2 is
+       deliberate — a transformed ancestor becomes the containing block for
+       every `position: fixed` descendant (mana bar, context bar, ghost card,
+       toasts, overlay), so they all re-anchor to this column instead of the
+       window. -->
+  <div class="fixed inset-y-0 left-1/2 -translate-x-1/2 z-30 w-full max-w-[450px] flex flex-col overflow-hidden overscroll-contain select-none bg-white dark:bg-gray-900">
 
     <!-- Left: fixed vertical mana bar -->
     <aside class="fixed left-0 top-0 bottom-0 w-12 z-40 bg-gray-100 dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center justify-between py-2">
@@ -393,7 +408,7 @@ onUnmounted(() => {
       <div>
         <div class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1">Current Deck</div>
         <div class="flex items-center gap-2">
-          <span class="flex-1 min-w-0 text-xs font-semibold text-gray-900 dark:text-white truncate">{{ currentDeck?.name ?? 'Starter Deck' }}</span>
+          <span class="flex-1 min-w-0 text-xs font-semibold text-gray-900 dark:text-white truncate">{{ currentDeck?.name ?? 'Your Deck' }}</span>
           <span class="flex-shrink-0 text-[10px] text-gray-400 dark:text-gray-500">{{ playerDeck.templates.length }} cards</span>
           <router-link to="/decks"
             class="flex-shrink-0 px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-[11px] font-bold">
@@ -610,8 +625,17 @@ onUnmounted(() => {
       </div>
     </transition>
 
-    <!-- Victory / Defeat overlay -->
-    <BattleOverlay v-if="isOver && state.winner" :winner="state.winner" :opponent-name="state.opponent.name" @reset="onReset" />
+    <!-- Match result screen -->
+    <BattleOverlay
+      v-if="isOver && state.winner"
+      :winner="state.winner"
+      :state="state"
+      :reward="reward"
+      :reward-enabled="isOnline"
+      @reset="onReset"
+      @menu="onMenu"
+      @decks="onDeckbuilder"
+    />
   </div>
 </template>
 

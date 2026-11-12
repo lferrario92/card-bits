@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth, type MatchStats } from '@/composables/useAuth'
+import { useCredits, CREDIT_STEP } from '@/composables/useCredits'
 import { fetchUserCards, type DbUserCard } from '@/lib/supabase'
 import TcgCard from '@/components/TcgCard.vue'
 
@@ -24,6 +25,42 @@ const filterMenuOpen = ref(false)
 const filterType = ref<'all' | 'creature' | 'spell'>('all')
 const filterManaCost = ref<'all' | 1 | 2 | 3 | 4 | 5 | 6 | 7>('all')
 
+// --- Daily credit timer -----------------------------------------------------
+// Credits are awarded twice a day, so the countdown runs 12h → 0 and resets
+// at 00:00 and 12:00 UTC. The epoch is UTC-aligned and a 12h period divides
+// the day evenly, so `Date.now() / 1000 % PERIOD_SECS` lands exactly on those
+// boundaries. At the cap (4 packs × 5k = 20k) the clock freezes, gray.
+const { credits } = useCredits()
+
+const PERIOD_SECS = 12 * 60 * 60
+const PACK_COUNT = 4
+const MAX_CREDITS = PACK_COUNT * CREDIT_STEP // 20,000 — all packs lit
+
+const nowSecs = ref(Math.floor(Date.now() / 1000))
+let clockTimer: number | null = null
+
+/** Capped accounts get no further bonus — pause the clock instead. */
+const timerFrozen = computed(() => credits.value !== null && credits.value >= MAX_CREDITS)
+
+const remainingSecs = computed(() => {
+  if (timerFrozen.value) return 0
+  const into = nowSecs.value % PERIOD_SECS
+  // On the boundary second itself the timer reads 0, then restarts at 12h.
+  return into === 0 ? 0 : PERIOD_SECS - into
+})
+
+const timerLabel = computed(() => {
+  const total = remainingSecs.value
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(Math.floor(total / 3600))}:${pad(Math.floor((total % 3600) / 60))}:${pad(total % 60)}`
+})
+
+/** One pack lights up per full 5,000 credits owned (4 × 5k = 20k). */
+const litPacks = computed(() => {
+  const owned = credits.value ?? 0
+  return Math.min(PACK_COUNT, Math.floor(owned / CREDIT_STEP))
+})
+
 async function loadStats() {
   loading.value = true
   loadError.value = ''
@@ -37,7 +74,10 @@ async function loadUserCards() {
   cardsLoading.value = true
   cardsError.value = ''
   try {
-    userCards.value = await fetchUserCards(user.value.id)
+    // Collection showcase: only cards the user actually owns. 0-copy rows may
+    // still exist in `user_cards` (deck bookkeeping) but don't belong here.
+    const owned = await fetchUserCards(user.value.id)
+    userCards.value = owned.filter((card) => card.count > 0)
   } catch (err) {
     console.error('Error loading user cards:', err)
     cardsError.value = err instanceof Error ? err.message : 'Failed to load cards'
@@ -49,6 +89,16 @@ async function loadUserCards() {
 onMounted(() => {
   loadStats()
   loadUserCards()
+  clockTimer = window.setInterval(() => {
+    nowSecs.value = Math.floor(Date.now() / 1000)
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (clockTimer !== null) {
+    window.clearInterval(clockTimer)
+    clockTimer = null
+  }
 })
 
 const winRate = computed(() =>
@@ -146,6 +196,45 @@ async function onSignOut() {
         <p v-if="authError" class="mt-3 text-xs font-semibold text-rose-600 dark:text-rose-400">
           {{ authError }}
         </p>
+      </section>
+
+      <!-- Daily credit bonus: countdown + booster pack progress -->
+      <section class="rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-bold text-gray-900 dark:text-white">Next credit bonus</h2>
+          <span class="text-[10px] font-semibold uppercase tracking-wide"
+            :class="timerFrozen ? 'text-gray-400 dark:text-gray-500' : 'text-primary'">
+            {{ timerFrozen ? 'Complete' : 'Twice a day' }}
+          </span>
+        </div>
+
+        <div class="rounded-2xl py-4 text-center"
+          :class="timerFrozen
+            ? 'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
+            : 'bg-primary/10 border border-primary/20'">
+          <div class="text-3xl font-black tabular-nums tracking-widest"
+            :class="timerFrozen ? 'text-gray-400 dark:text-gray-500' : 'text-primary'">
+            {{ timerLabel }}
+          </div>
+          <p class="text-[11px] mt-1 font-medium"
+            :class="timerFrozen ? 'text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'">
+            {{ timerFrozen ? 'Bonus fully collected' : 'until the next credit bonus' }}
+          </p>
+        </div>
+
+        <!-- Four mini packs = 20k credits; unearned ones stay gray -->
+        <div class="mt-4 flex justify-center gap-3">
+          <img
+            v-for="pack in PACK_COUNT"
+            :key="pack"
+            src="/booster_pack.jpg"
+            alt="Booster pack"
+            class="w-14 h-[76px] object-cover rounded-lg shadow-sm transition-all duration-300"
+            :class="pack <= litPacks
+              ? 'grayscale-0 opacity-100'
+              : 'grayscale opacity-40'"
+          />
+        </div>
       </section>
 
       <!-- Match record -->

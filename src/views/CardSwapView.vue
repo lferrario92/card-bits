@@ -5,7 +5,10 @@ import { addTemplates } from '@/game/collection'
 import TcgCard from '@/components/TcgCard.vue'
 import type { CardTemplate } from '@/game/types'
 import { fetchAvailableBoosters, openBooster, dbCardToTemplate, type DbBooster, supabase } from '@/lib/supabase'
+import { useCredits } from '@/composables/useCredits'
 import { useAuth } from '@/composables/useAuth'
+
+const { credits, setCredits } = useCredits()
 
 // Proper Card component that forwards ref to the root element
 const Card = defineComponent({
@@ -66,6 +69,17 @@ const currentPackSize = ref(5)
 // Boosters fetched from Supabase
 const boosters = ref<DbBooster[]>([])
 const openError = ref<string | null>(null)
+
+/**
+ * A booster can only be opened when the shared balance covers its price.
+ * While the balance is still unknown (`null`, first load), everything counts
+ * as unaffordable so a stale UI can never trigger a purchase that would fail
+ * server-side. Free boosters stay clickable regardless.
+ */
+function canAfford(booster: DbBooster): boolean {
+  if (booster.price <= 0) return true
+  return credits.value !== null && credits.value >= booster.price
+}
 
 const cardInstances = ref<Array<{ cardRef: HTMLElement | null }>>([])
 
@@ -166,6 +180,12 @@ async function initPackFromCards(picked: CardTemplate[]) {
 
 async function openPack(booster: DbBooster) {
   if (isAnimating.value) return
+  // Defense in depth: the button is disabled, but the market's click-anywhere
+  // fallback and any stray caller must not be able to buy on credit either.
+  if (!canAfford(booster)) {
+    openError.value = 'Not enough credits for this booster.'
+    return
+  }
   isAnimating.value = true
   openError.value = null
 
@@ -190,6 +210,10 @@ async function openPack(booster: DbBooster) {
 
   try {
     const result = await openBooster(userId, booster.id)
+
+    // The RPC already deducted the price — keep the shared balance in sync so
+    // the floating bubble and profile reflect it immediately.
+    setCredits(result.new_balance)
 
     // The booster RPC may omit tcg_combat_data; fetch it so cards show their stats.
     const openedCards = result.cards ?? []
@@ -329,6 +353,8 @@ async function fanOutAndReturnToMarket() {
   
   cards.forEach((card, i) => {
     const direction = (i % 2 === 0 ? -1 : 1)
+    // The immersive reveal layer is full-bleed (no transformed ancestor), so
+    // cards must travel past the real screen edge to exit cleanly.
     const finalX = direction * (window.innerWidth + 200)
     const finalY = -100 + i * 30
     
@@ -356,7 +382,7 @@ async function showGrid() {
   const maxPerRow = 3
   const gap = 16
   
-  // Calculate scale to fit viewport
+  // Calculate scale to fit viewport (the reveal layer is full-bleed)
   const viewportWidth = window.innerWidth
   const viewportHeight = window.innerHeight - 200
   const rows = Math.ceil(total / maxPerRow)
@@ -415,8 +441,9 @@ function handleCardClick(idx: number) {
 function handleContainerClick() {
   if (state.value === 'market') {
     // In market, open the standard pack (or could use last selected)
-    if (!isAnimating.value && boosters.value.length > 0) {
-      openPack(boosters.value[0])
+    const first = boosters.value[0]
+    if (!isAnimating.value && first && canAfford(first)) {
+      openPack(first)
     }
   } else if (state.value === 'stack') {
     if (!isAnimating.value) {
@@ -534,12 +561,19 @@ onUnmounted(() => {
           <p class="text-gray-600 dark:text-gray-400 mb-6">Select a pack to open</p>
           
           <div class="flex flex-col gap-4 items-center">
+            <p v-if="openError" class="text-sm font-semibold text-rose-600 dark:text-rose-400">
+              {{ openError }}
+            </p>
             <button
               v-for="booster in boosters"
               :key="booster.id"
               @click="openPack(booster)"
-              :disabled="isAnimating"
-              class="w-48 h-72 rounded-xl relative font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex flex-col items-center justify-between gap-1 text-base bg-cover bg-center hover:scale-105"
+              :disabled="isAnimating || !canAfford(booster)"
+              :title="canAfford(booster) ? booster.name : 'Not enough credits'"
+              class="w-48 h-72 rounded-xl relative font-bold text-white transition-all shadow-lg flex flex-col items-center justify-between gap-1 text-base bg-cover bg-center disabled:cursor-not-allowed"
+              :class="canAfford(booster)
+                ? 'hover:scale-105'
+                : 'grayscale opacity-50'"
             >
               <!-- :style="{ backgroundImage: `url(${booster.cover_image || 'https://via.placeholder.com/150'})` }"
                -->
@@ -555,7 +589,7 @@ onUnmounted(() => {
               />
               <!--  -->
               <span v-if="false" class="bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.name }}</span>
-              <span class="text-xs bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.card_count }} cards · {{ booster.price }} credits</span>
+              <span v-if="false" class="text-xs bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.card_count }} cards · {{ booster.price }} credits</span>
             </button>
           </div>
         </div>

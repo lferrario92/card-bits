@@ -182,7 +182,7 @@ onUnmounted(() => {
 
         <!-- Grid State - Centered Grid Overlay -->
         <div v-if="state === 'grid'" class="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-          <div class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-4xl w-full mx-4 animate-fade-in">
+          <div class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-md w-full mx-4 animate-fade-in">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-xl font-bold text-gray-900 dark:text-white">All Cards Revealed!</h2>
               <button @click="fanOutAndReturnToMarket" 
@@ -191,7 +191,10 @@ onUnmounted(() => {
               </button>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <!-- Plain grid-cols-2: sm:/md: answer to the viewport, so inside
+                 the 450px column they'd still fire on desktop and squeeze
+                 three columns into a phone-width panel. -->
+            <div class="grid grid-cols-2 gap-4">
               <div v-for="card in cardsData" :key="card.id" class="relative aspect-[3/4] rounded-xl overflow-hidden shadow-lg">
                 <img :src="card.img" :alt="`card-${card.id}`" class="w-full h-full object-cover" />
                 <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
@@ -233,7 +236,9 @@ onUnmounted(() => {
         <!-- Instructions -->
         <div class="mt-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-gray-200 dark:border-gray-700">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">How it works</h2>
-          <div class="grid gap-3 md:grid-cols-3 text-sm">
+          <!-- Single column at every width: md: would fire on desktop and
+               squeeze three text columns into the 450px panel. -->
+          <div class="grid gap-3 text-sm">
             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
               <h3 class="font-medium text-gray-900 dark:text-white mb-2">1. Market</h3>
               <ul class="text-xs text-gray-600 dark:text-gray-300 space-y-1">

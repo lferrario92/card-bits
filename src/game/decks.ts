@@ -1,5 +1,4 @@
 import type { CardTemplate } from './types'
-import { STARTER_CARDS } from './cards'
 
 export interface Deck {
   id: string
@@ -66,15 +65,6 @@ export function setStoredCurrentDeckId(id: string | null): void {
   }
 }
 
-export function createDefaultDeck(): Deck {
-  return {
-    id: makeId(),
-    name: 'Starter Deck',
-    cards: STARTER_CARDS.map(c => ({ ...c, effects: c.effects.map(e => ({ ...e })) })),
-  }
-}
-
-/** Identity key for a card template (titles are unique in the catalog). */
-export function cardKey(card: CardTemplate): string {
+/** Identity key for a card template (titles are unique in the catalog). */export function cardKey(card: CardTemplate): string {
   return card.title
 }

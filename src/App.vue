@@ -2,21 +2,35 @@
 import { ref, computed } from 'vue'
 import { RouterView, useRouter, useRoute } from 'vue-router'
 import BottomNav from './components/BottomNav.vue'
+import FloatingBoosterBubble from './components/FloatingBoosterBubble.vue'
+import { useCreditsAutoRefresh } from './composables/useCredits'
 
 const router = useRouter()
 const route = useRoute()
 
+// Fetches the signed-in user's profile (credits) once at app start and keeps
+// it fresh while the app stays open. Lives here so it runs no matter which
+// view is mounted.
+useCreditsAutoRefresh()
+
 const currentPath = computed(() => route.path)
-// The battle and lobby views are full-screen surfaces with no bottom nav.
+// The battle view is a full-screen surface with no bottom nav; every other
+// route (including the online lobby) keeps the nav visible.
 const hideNav = computed(() => route.name === 'BounceCards' || route.meta.hideNav === true)
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col bg-white dark:bg-gray-900">
-    <RouterView v-slot="{ Component }">
-      <component :is="Component" />
-    </RouterView>
+    <!-- Mobile-first 450px column: content stays phone-width on desktop.
+         No transform here — a transformed ancestor would become the
+         containing block for every fixed modal/backdrop inside. -->
+    <div class="w-full max-w-[450px] mx-auto flex flex-col flex-1">
+      <RouterView v-slot="{ Component }">
+        <component :is="Component" />
+      </RouterView>
+    </div>
     <BottomNav v-if="!hideNav" :current-path="currentPath" />
+    <FloatingBoosterBubble />
   </div>
 </template>
 

@@ -6,7 +6,6 @@ import {
   MIN_CARDS,
   MAX_COPIES,
   cardKey,
-  createDefaultDeck,
   getStoredCurrentDeckId,
   loadDecks,
   makeId,
@@ -27,11 +26,12 @@ function persist() {
 function ensureInit() {
   if (initialized) return
   initialized = true
-  let loaded = loadDecks()
-  if (loaded.length === 0) loaded = [createDefaultDeck()]
+  // No deck is created for the player: they build their first one from the
+  // cards they own (see the router guard that sends deckless players to /decks).
+  const loaded = loadDecks()
   decks.value = loaded
   const stored = getStoredCurrentDeckId()
-  currentDeckId.value = stored && loaded.some(d => d.id === stored) ? stored : loaded[0].id
+  currentDeckId.value = stored && loaded.some(d => d.id === stored) ? stored : (loaded[0]?.id ?? null)
   persist()
 }
 
@@ -66,8 +66,11 @@ export function useDecks() {
 
   function deleteDeck(id: string): void {
     decks.value = decks.value.filter(d => d.id !== id)
-    if (decks.value.length === 0) decks.value = [createDefaultDeck()]
-    if (!decks.value.some(d => d.id === currentDeckId.value)) currentDeckId.value = decks.value[0].id
+    // Deleting the last deck leaves the player with none on purpose — they
+    // make a new one from their own cards rather than getting a free preset.
+    if (!decks.value.some(d => d.id === currentDeckId.value)) {
+      currentDeckId.value = decks.value[0]?.id ?? null
+    }
     persist()
   }
 

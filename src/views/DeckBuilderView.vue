@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useDecks } from '@/game/useDecks'
 import { cardKey } from '@/game/decks'
 import type { CardTemplate } from '@/game/types'
 import { fetchUserCards, dbCardToTemplate, type DbUserCard } from '@/lib/supabase'
 import { useAuth } from '@/composables/useAuth'
+import { useBoosterBubble } from '@/composables/useBoosterBubble'
 import TcgCard from '@/components/TcgCard.vue'
 import CombatCard from '@/components/CombatCard.vue'
 import predefinedDecks from '@/data/predefinedDecks.json'
@@ -42,6 +43,16 @@ const editingId = ref<string | null>(null)
 const nameInput = ref('')
 
 const editingDeck = computed(() => (editingId.value ? getDeck(editingId.value) : null))
+
+// The floating booster bubble stays out of the deck editor — it would cover
+// cards in the collection strip. Everywhere else in this view it is welcome.
+const { setBubbleSuppressed } = useBoosterBubble()
+watch(
+  () => viewMode.value === 'custom' && !!editingDeck.value,
+  (hide) => setBubbleSuppressed(hide),
+  { immediate: true },
+)
+onUnmounted(() => setBubbleSuppressed(false))
 
 const total = computed(() => editingDeck.value?.cards.length ?? 0)
 

@@ -1,8 +1,10 @@
-import { computed, ref, type ComputedRef, type Ref } from 'vue'
+import { computed, ref, watch, type ComputedRef, type Ref } from 'vue'
 import { useBattle, type BattleState } from '@/game/useBattle'
 import { mirrorState, redactForGuest } from '@/game/mirror'
-import type { AttackTarget, CardData, CardTemplate } from '@/game/types'
+import type { AttackTarget, BattlePhase, CardData, CardTemplate, Side } from '@/game/types'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/composables/useAuth'
+import { useCredits } from '@/composables/useCredits'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 /**
@@ -18,6 +20,11 @@ export interface BattleController {
   busy: Ref<boolean>
   isPlayerTurn: ComputedRef<boolean>
   isOver: ComputedRef<boolean>
+  /**
+   * State of the +1,000-credit victory award for this match. Only online
+   * battles award credits; VS AI controllers keep this at `'none'`.
+   */
+  reward: Ref<RewardState>
   canDraw: ComputedRef<boolean>
   playerTurnLabel: ComputedRef<string>
   /** Local-only hold on input while the opposing (remote) side acts. */
@@ -39,6 +46,90 @@ export interface BattleController {
 export interface LocalDeck {
   templates: CardTemplate[]
   name: string
+}
+
+// --- Victory reward --------------------------------------------------------
+
+/** Credits granted to the winner of an online match (never for VS AI). */
+export const VICTORY_CREDITS = 1000
+
+/**
+ * Life-cycle of the victory award for the current match:
+ * `none` → `pending` → `claimed` | `failed`, back to `none` on reset.
+ */
+export type RewardState = 'none' | 'pending' | 'claimed' | 'failed'
+
+/**
+ * Runs the `award_victory_credits` RPC for the signed-in player and mirrors
+ * the result into the local profile store (`profile.credits += 1000`), so the
+ * bubble badge and profile show the new balance without a refetch.
+ * Returns false when the award could not be confirmed.
+ */
+async function awardVictoryCredits(): Promise<boolean> {
+  const { user } = useAuth()
+  const uid = user.value?.id
+  if (!uid) {
+    console.warn('[reward] no signed-in user to award')
+    return false
+  }
+
+  const { credits, refreshCredits, setCredits } = useCredits()
+  // Base balance for `profile.credits += 1000` (at most one extra read).
+  if (credits.value === null) await refreshCredits(true)
+
+  try {
+    const { error } = await supabase.rpc('award_victory_credits', {
+      winner_user_id: uid,
+      amount: VICTORY_CREDITS,
+    })
+    if (error) {
+      console.warn('[reward] award_victory_credits failed', error.message)
+      return false
+    }
+  } catch (err) {
+    console.warn('[reward] award_victory_credits threw', err)
+    return false
+  }
+
+  // The server already stored the new balance; bump the local copy too.
+  if (credits.value !== null) setCredits(credits.value + VICTORY_CREDITS)
+  return true
+}
+
+/**
+ * Awards the victory reward exactly once per victory sequence — online
+ * battles only (the VS AI controller never installs this watcher, so
+ * offline play can't reach the RPC at all).
+ *
+ * `readWinner` must be seat-neutral (`'player'` == the local human, i.e. the
+ * active player — the online guest's mirrored state already maps its own seat
+ * to `'player'`), so `winnerId === activePlayerId` translates to
+ * `winner === 'player'`. The RPC fires only on the `null → 'player'`
+ * transition (guarded by the pending/claimed state); a reset returns the
+ * state to `none` so a rematch can award again.
+ */
+function watchVictoryReward(readWinner: () => Side | null): Ref<RewardState> {
+  const reward = ref<RewardState>('none')
+  watch(readWinner, (winner) => {
+    if (winner === null) {
+      // Fresh match (reset): the next victory may award again.
+      reward.value = 'none'
+      return
+    }
+    if (winner !== 'player') return // defeat — nothing to award
+    if (reward.value === 'pending' || reward.value === 'claimed') return // once only
+    reward.value = 'pending'
+    void awardVictoryCredits()
+      .then((ok) => {
+        // A reset during the request re-armed the state; don't let the late
+        // result poison the next victory sequence.
+        if (reward.value === 'pending') reward.value = ok ? 'claimed' : 'failed'
+      })
+      .catch(() => {
+        if (reward.value === 'pending') reward.value = 'failed'
+      })
+  })
+  return reward
 }
 
 // --- Wire protocol ---------------------------------------------------------
@@ -92,11 +183,16 @@ export function createAiController(
     onCardPlayStart: (card, side) => (side === 'opponent' ? opts.onOpponentPlay?.(card) : undefined),
   })
 
+  // VS AI battles never award credits — only online PvP does (see
+  // useOnlineController). Stays 'none', so the result screen shows no reward.
+  const reward = ref<RewardState>('none')
+
   return {
     state: battle.state,
     busy: battle.busy,
     isPlayerTurn: battle.isPlayerTurn,
     isOver: battle.isOver,
+    reward,
     canDraw: battle.canDraw,
     playerTurnLabel: battle.playerTurnLabel,
     locked: ref(false) as Ref<boolean>,
@@ -183,6 +279,126 @@ export function useOnlineController(opts: OnlineOptions): {
   }
 
   // -----------------------------------------------------------------------
+  // Host: durable match record in `tcg_matches`.
+  //
+  // The lobby row starts as 'waiting', the join RPC flips it to 'playing',
+  // and this block keeps `state` / `turn` fresh during the battle before
+  // writing the final `status` / `winner` / `winner_name` once decided.
+  // The DB guard trigger only allows the HOST to update the row, so the guest
+  // never writes here.
+  // -----------------------------------------------------------------------
+  const PERSIST_INTERVAL = 1200
+
+  let matchRowId: string | null = null
+  let matchSeats: {
+    hostId: string
+    guestId: string | null
+    hostName: string
+    guestName: string | null
+  } | null = null
+  let rowFinalised = false
+  let lastPersistAt = 0
+  let persistTimer: ReturnType<typeof setTimeout> | null = null
+  let persisting = false
+  let pendingFinal = false
+
+  /** Load (once) the row this battle belongs to, keyed by the shared code. */
+  async function ensureMatchRow(force = false): Promise<boolean> {
+    if (matchRowId && !force) return true
+    const { data, error: selErr } = await supabase
+      .from('tcg_matches')
+      .select('id, host_id, guest_id, host_name, guest_name')
+      .eq('code', code)
+      .maybeSingle()
+    if (selErr || !data) {
+      console.warn('[tcg:host] could not load match row', selErr?.message ?? 'not found')
+      return false
+    }
+    matchRowId = data.id as string
+    matchSeats = {
+      hostId: data.host_id as string,
+      guestId: (data.guest_id as string | null) ?? null,
+      hostName: (data.host_name as string) || 'Host',
+      guestName: (data.guest_name as string | null) ?? null,
+    }
+    return true
+  }
+
+  /** Plain JSON copy of the engine state (drops Vue reactivity). */
+  function serialisedState(): unknown {
+    return JSON.parse(JSON.stringify(battle!.state))
+  }
+
+  /**
+   * Engine seats are host-relative: 'player' is always the host. Once the
+   * engine flips to 'over' nobody holds the turn, so the column stays null.
+   */
+  function seatFor(phase: BattlePhase): 'host' | 'guest' | null {
+    if (phase === 'player') return 'host'
+    if (phase === 'opponent') return 'guest'
+    return null
+  }
+
+  async function flushPersist(): Promise<void> {
+    if (persisting) return
+    const isFinal = pendingFinal
+    pendingFinal = false
+    if (!battle || opts.role !== 'host') return
+
+    persisting = true
+    lastPersistAt = Date.now()
+    try {
+      // The final write re-reads the row so the guest seat is never stale.
+      if (!(await ensureMatchRow(isFinal)) || !matchRowId || !matchSeats) return
+
+      const winnerSide = battle.state.winner
+      const payload: Record<string, unknown> = {
+        state: serialisedState(),
+        turn: seatFor(battle.state.phase),
+      }
+
+      if (winnerSide) {
+        payload.status = 'finished'
+        payload.winner = winnerSide === 'player' ? matchSeats.hostId : matchSeats.guestId
+        payload.winner_name =
+          winnerSide === 'player' ? matchSeats.hostName : (matchSeats.guestName ?? opts.opponentName)
+      }
+
+      const { error: updErr } = await supabase.from('tcg_matches').update(payload).eq('id', matchRowId)
+      if (updErr) {
+        // Leave rowFinalised false so the next snapshot retries the write.
+        console.warn('[tcg:host] match persist failed', updErr.message)
+      } else {
+        if (winnerSide) rowFinalised = true
+        if (isFinal) console.log('[tcg:host] match finalised', payload.winner_name)
+      }
+    } catch (err) {
+      console.warn('[tcg:host] match persist threw', err)
+    } finally {
+      persisting = false
+      // A final write requested while we were mid-flight still has to land.
+      if (pendingFinal) schedulePersist(true)
+    }
+  }
+
+  /**
+   * Coalesce state changes into throttled row writes. `final` bypasses the
+   * throttle so the result is recorded immediately.
+   */
+  function schedulePersist(final: boolean) {
+    if (opts.role !== 'host' || !battle) return
+    if (final) pendingFinal = true
+    if (rowFinalised && !final) return
+    if (persistTimer || persisting) return
+
+    const wait = pendingFinal ? 0 : Math.max(0, PERSIST_INTERVAL - (Date.now() - lastPersistAt))
+    persistTimer = setTimeout(() => {
+      persistTimer = null
+      void flushPersist()
+    }, wait)
+  }
+
+  // -----------------------------------------------------------------------
   // Host: run the engine and relay snapshots after every mutation.
   // -----------------------------------------------------------------------
   function broadcastSnapshot() {
@@ -193,6 +409,8 @@ export function useOnlineController(opts: OnlineOptions): {
     console.log('[tcg:host] redacted guestHand=', redacted.opponentHand.length, 'guestDraw=', redacted.opponentDrawPile.length)
     const payload: SnapshotMsg = { kind: 'snapshot', state: redacted, over: !!battle.state.winner }
     void channel.send({ type: 'broadcast', event: 'snapshot', payload })
+    // Keep the durable match row in sync (state/turn live, result at the end).
+    schedulePersist(!!battle.state.winner)
   }
 
   /**
@@ -470,6 +688,10 @@ export function useOnlineController(opts: OnlineOptions): {
     return opts.role === 'host' ? (battle ? battle.state : emptyState()) : (guestState.value ?? emptyState())
   })
 
+  // Seat-neutral winner ('player' == me on both seats, guest state arrives
+  // mirrored) → award the 1,000 credits exactly once on the winner's client.
+  const reward = watchVictoryReward(() => stateRef.value.winner)
+
   const controller: BattleController = {
     get state() {
       return stateRef.value ?? emptyState()
@@ -494,6 +716,7 @@ export function useOnlineController(opts: OnlineOptions): {
       return `${s.opponent.name}'s Turn`
     }),
     locked,
+    reward,
     playCard: async (card) => {
       if (opts.role === 'host') {
         if (!battle) return false
@@ -609,6 +832,13 @@ export function useOnlineController(opts: OnlineOptions): {
 
   function destroy() {
     clearHandshakeInterval()
+    if (persistTimer) {
+      clearTimeout(persistTimer)
+      persistTimer = null
+    }
+    // Land a pending result before the channel goes away (e.g. navigating
+    // back to the lobby right after the winning blow).
+    if (opts.role === 'host' && battle?.state.winner && !rowFinalised) void flushPersist()
     void supabase.removeChannel(channel)
   }
 

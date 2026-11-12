@@ -14,6 +14,10 @@ export interface MatchRow {
   guest_name: string | null
   winner: string | null
   winner_name: string | null
+  /** Which seat currently holds the turn ('host' | 'guest'). Written by the host. */
+  turn?: 'host' | 'guest' | null
+  /** Full serialised BattleState written by the host during the match. */
+  state?: unknown
 }
 
 /** Uppercase code, ambiguity-free alphabet (no O/0/I/1). */

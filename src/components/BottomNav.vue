@@ -14,7 +14,7 @@ const navItems = [
   { path: '/enemies', label: 'Fight', icon: '⚔️' },
   { path: '/online', label: 'Online', icon: '🌐' },
   { path: '/decks', label: 'Decks', icon: '🗂️' },
-  { path: '/card-swap', label: 'Boosters', icon: '🔄' },
+  { path: '/card-swap', label: 'Boosters', icon: '📦' },
   { path: '/profile', label: 'Profile', icon: '👤' },
 ]
 
@@ -26,7 +26,9 @@ const navigate = (path: string) => {
 </script>
 
 <template>
-  <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 safe-area-bottom z-50" aria-label="Main navigation">
+  <!-- inset-x-0 + mx-auto + max-w: the bar spans the window but its content
+       centers at the same 450px column as the views. -->
+  <nav class="fixed bottom-0 left-0 right-0 mx-auto max-w-[450px] bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 safe-area-bottom z-50" aria-label="Main navigation">
     <div class="flex justify-around items-center h-16">
       <button
         v-for="item in navItems"

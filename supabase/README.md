@@ -18,6 +18,7 @@ Editor**, run them once, and the app starts working against the database.
 |---|------|-----------------|
 | 1 | [`migrations/0001_tcg_profiles.sql`](migrations/0001_tcg_profiles.sql) | `tcg_profiles` table, auto-create trigger on sign-up, RLS policies |
 | 2 | [`migrations/0002_tcg_matches.sql`](migrations/0002_tcg_matches.sql) | `tcg_matches` table, `tcg_join_match()` RPC, authority guard, RLS, Realtime publication |
+| 3 | [`migrations/0003_tcg_boosters.sql`](migrations/0003_tcg_boosters.sql) | `tcg_boosters` / `tcg_cards` tables, user collections, `credits` column, `tcg_open_booster()` RPC |
 
 **Run them strictly in that order.** `0002` depends on the
 `tcg_touch_updated_at()` trigger function created in `0001`, and it references

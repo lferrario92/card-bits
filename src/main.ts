@@ -13,6 +13,7 @@ import LoginView from './views/LoginView.vue'
 import ProfileView from './views/ProfileView.vue'
 import MatchLobbyView from './views/MatchLobbyView.vue'
 import { initAuth, useAuth } from './composables/useAuth'
+import { useDecks } from './game/useDecks'
 
 const routes = [
   { path: '/', redirect: '/drift-wall' },
@@ -25,7 +26,7 @@ const routes = [
   { path: '/stack-market', name: 'StackMarket', component: StackMarketView },
   { path: '/decks', name: 'Decks', component: DeckBuilderView },
   { path: '/profile', name: 'Profile', component: ProfileView },
-  { path: '/online', name: 'Online', component: MatchLobbyView, meta: { hideNav: true } },
+  { path: '/online', name: 'Online', component: MatchLobbyView },
 ]
 
 const router = createRouter({
@@ -44,6 +45,30 @@ router.beforeEach(async (to) => {
   if (!isAuthenticated.value) {
     return { name: 'Login', query: { redirect: to.fullPath } }
   }
+
+  // A battle needs a deck the player built themselves — there is no built-in
+  // starter deck any more. Send deckless players to the deck builder instead
+  // of starting them with an empty hand.
+  //
+  // Online matches carrying a ?code= are deliberately exempt: bouncing out of
+  // the lobby there would strand the opponent waiting for a seat that never
+  // arrives, and they reach the battle through /enemies anyway.
+  const needsDeck =
+    to.name === 'Enemies' || (to.name === 'BounceCards' && typeof to.query.code !== 'string')
+  if (needsDeck) {
+    const { decks, currentDeckTemplates, selectCurrent } = useDecks()
+    if (currentDeckTemplates().length === 0) {
+      // Current deck is empty (or missing): prefer another deck that has
+      // cards over bouncing the player out of the fight flow.
+      const fallback = decks.value.find(d => d.cards.length > 0)
+      if (fallback) {
+        selectCurrent(fallback.id)
+      } else {
+        return { name: 'Decks' }
+      }
+    }
+  }
+
   return true
 })
 

@@ -59,6 +59,8 @@ export interface DbBooster {
   card_count: number
   cover_image: string | null
   release_date: string | null
+  /** Only TCG-relevant boosters (true) are listed in the swap view. */
+  tcg_booster: boolean
 }
 
 export interface DbOpenedCard {
@@ -102,8 +104,17 @@ export interface DbUserCard {
 // ---------------------------------------------------------------------------
 
 export async function fetchAvailableBoosters(): Promise<DbBooster[]> {
-  const CACHE_KEY = 'boosters_cache'
+  // v2 = filtered to tcg_booster = true; the legacy key held the unfiltered
+  // list and must not be reused for its remaining TTL.
+  const CACHE_KEY = 'boosters_cache_v2'
+  const LEGACY_CACHE_KEY = 'boosters_cache'
   const CACHE_DURATION = 60 * 60 * 1000 // 60 minutes in milliseconds
+
+  try {
+    localStorage.removeItem(LEGACY_CACHE_KEY)
+  } catch {
+    /* storage unavailable — nothing to clean up */
+  }
 
   // Check cache
   const cached = localStorage.getItem(CACHE_KEY)
@@ -115,11 +126,12 @@ export async function fetchAvailableBoosters(): Promise<DbBooster[]> {
     }
   }
 
-  // Fetch fresh data
+  // Fetch fresh data — only boosters flagged for the TCG market.
   const today = new Date().toISOString().split('T')[0]
   const { data, error } = await supabase
     .from('boosters')
-    .select('id, name, description, price, card_count, cover_image, release_date')
+    .select('id, name, description, price, card_count, cover_image, release_date, tcg_booster')
+    .eq('tcg_booster', true)
     .lte('release_date', today)
     .order('price', { ascending: true })
 
@@ -150,6 +162,35 @@ export async function openBooster(
   if (!data) throw new Error('No data returned from booster opening')
   if (!data.success) throw new Error(data.message || 'Failed to open booster')
   return data
+}
+
+// ---------------------------------------------------------------------------
+// Profile
+// ---------------------------------------------------------------------------
+
+export interface DbProfile {
+  id: string
+  username: string | null
+  avatar_url: string | null
+  credits: number | null
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Reads the signed-in user's row from `profiles` (username, avatar and the
+ * credit balance). Mirrors {@link fetchUserCards}: one call, no cache — the
+ * caller (useCredits) decides when a read is actually needed.
+ */
+export async function fetchUserProfile(userId: string): Promise<DbProfile | null> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, username, avatar_url, credits, created_at, updated_at')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (error) throw error
+  return (data as DbProfile | null) ?? null
 }
 
 export async function fetchUserCards(userId: string): Promise<DbUserCard[]> {
