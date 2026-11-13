@@ -121,7 +121,7 @@ const view = computed(() => (props.card as any)?.cards
         >
           <span class="text-gray-400">Effects:</span>
           <div v-for="(effect, idx) in view.cards.tcg_combat_data.effects" :key="idx" class="text-gray-300">
-            {{ effect.action }} {{ effect.value }} to {{ effect.target === 'all' ? 'all' : effect.target }}
+            {{ effect.action }} {{ effect.value }} to {{ effect.target === 'all' ? 'all' : effect.target }} <span v-if="effect.statTarget">({{ effect.statTarget }})</span>
             <span v-if="(effect as any).scaleBy" class="text-yellow-300">
               × {{ (effect as any).scaleBy === 'cardsPlayedThisTurn' ? 'cards played' : ((effect as any).scaleTarget ?? 'self') + ' board' }}
             </span>

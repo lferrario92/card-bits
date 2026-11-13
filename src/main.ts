@@ -64,7 +64,10 @@ router.beforeEach(async (to) => {
       if (fallback) {
         selectCurrent(fallback.id)
       } else {
-        return { name: 'Decks' }
+        // Flag the bounce so the deck view can explain it (see the toast in
+        // DeckBuilderView): "no decks at all" vs "decks exist but all empty".
+        const reason = decks.value.length === 0 ? 'no-decks' : 'empty-deck'
+        return { name: 'Decks', query: { reason } }
       }
     }
   }

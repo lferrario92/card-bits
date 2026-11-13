@@ -564,33 +564,38 @@ onUnmounted(() => {
             <p v-if="openError" class="text-sm font-semibold text-rose-600 dark:text-rose-400">
               {{ openError }}
             </p>
-            <button
+            <div
               v-for="booster in boosters"
               :key="booster.id"
-              @click="openPack(booster)"
-              :disabled="isAnimating || !canAfford(booster)"
-              :title="canAfford(booster) ? booster.name : 'Not enough credits'"
-              class="w-48 h-72 rounded-xl relative font-bold text-white transition-all shadow-lg flex flex-col items-center justify-between gap-1 text-base bg-cover bg-center disabled:cursor-not-allowed"
-              :class="canAfford(booster)
-                ? 'hover:scale-105'
-                : 'grayscale opacity-50'"
+              class="flex flex-col items-center gap-2"
             >
-              <!-- :style="{ backgroundImage: `url(${booster.cover_image || 'https://via.placeholder.com/150'})` }"
-               -->
-              <img
-                :src="booster.cover_image || 'https://via.placeholder.com/150'"
-                alt=""
-                class="w-[calc(100%-1rem)] left-2 right-2 object-cover absolute inset-0 bottom-2 top-2 h-[calc(100%-2rem)]"
-              />
-              <img
-                :src="'/booster_transparent.png'"
-                alt=""
-                class="w-full h-full object-cover absolute inset-0"
-              />
-              <!--  -->
-              <span v-if="false" class="bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.name }}</span>
-              <span v-if="false" class="text-xs bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.card_count }} cards · {{ booster.price }} credits</span>
-            </button>
+              <button
+                @click="openPack(booster)"
+                :disabled="isAnimating || !canAfford(booster)"
+                :title="canAfford(booster) ? booster.name : 'Not enough credits'"
+                class="w-48 h-72 rounded-xl relative font-bold text-white transition-all shadow-lg flex flex-col items-center justify-between gap-1 text-base bg-cover bg-center disabled:cursor-not-allowed"
+                :class="canAfford(booster)
+                  ? 'hover:scale-105'
+                  : 'grayscale opacity-50'"
+              >
+                <!-- :style="{ backgroundImage: `url(${booster.cover_image || 'https://via.placeholder.com/150'})` }"
+                -->
+                <img
+                  :src="booster.cover_image || 'https://via.placeholder.com/150'"
+                  alt=""
+                  class="w-[calc(100%-1rem)] left-2 right-2 object-cover absolute inset-0 bottom-2 top-2 h-[calc(100%-2rem)]"
+                />
+                <img
+                  :src="'/booster_transparent.png'"
+                  alt=""
+                  class="w-full h-full object-cover absolute inset-0"
+                />
+                <!--  -->
+                <span v-if="false" class="bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.name }}</span>
+                <span v-if="false" class="text-xs bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.card_count }} cards · {{ booster.price }} credits</span>
+              </button>
+              <span class="text-xs px-2 py-1 rounded backdrop-blur-sm">{{ booster.description }}</span>
+            </div>
           </div>
         </div>
 

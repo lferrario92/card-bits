@@ -196,7 +196,7 @@ export async function fetchUserProfile(userId: string): Promise<DbProfile | null
 export async function fetchUserCards(userId: string): Promise<DbUserCard[]> {
   const { data, error } = await supabase
     .from('user_cards')
-    .select('*, cards(tcg_available, image, name, rarity, tcg_combat_data)')
+    .select('*, cards(id, tcg_available, image, name, rarity, description, tcg_combat_data)')
     .eq('user_id', userId)
 
   if (error) throw error
@@ -217,6 +217,9 @@ export function dbCardToTemplate(dbCard: DbOpenedCard | DbUserCard['cards']): Ca
   const combatData = dbCard.tcg_combat_data
 
   return {
+    // Backend id — lets deck snapshots be matched against fresh profile data
+    // (see useDeckSync). Omitted only if a caller passes a partial row.
+    cardId: dbCard.id,
     title: dbCard.name,
     image: dbCard.image ?? '',
     description: dbCard.description ?? '',

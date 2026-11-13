@@ -58,7 +58,7 @@
     "id": "e8d468b5-79f7-4d40-b17f-2ca3b9849a48",
     "name": "Caballero Veterano",
     "description": "Presencia fuerte en curva de turno 3",
-    "rarity": "Rare",
+    "rarity": "Uncommon",
     "main_set": "tcg_base_2026",
     "image": "/assets/local_cards/base2025ext/kevin_king.jpg",
     "tcg_available": true,
@@ -71,13 +71,13 @@
       "manaCost": 3
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T04:31:03.452547+00:00"
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
   },
   {
     "id": "b24ea433-d4f4-4d9b-9279-5915f968e290",
     "name": "Campeón de la Arena",
     "description": "Unidad para intercambios favorables",
-    "rarity": "Rare",
+    "rarity": "Uncommon",
     "main_set": "tcg_base_2026",
     "image": "/assets/local_cards/leyendas/main_char.jpg",
     "tcg_available": true,
@@ -90,13 +90,32 @@
       "manaCost": 4
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:21:26.173154+00:00"
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
+  },
+  {
+    "id": "665287f6-f71d-489e-aa85-4db40805b097",
+    "name": "Campeón de la Arena (Edición Legendaria)",
+    "description": "Unidad para intercambios favorables",
+    "rarity": "Legendary",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/leyendas/main_char.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 4,
+      "charge": false,
+      "health": 5,
+      "effects": [],
+      "manaCost": 4
+    },
+    "created_at": "2026-11-06T16:07:21.404245+00:00",
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
   },
   {
     "id": "e6a2e71d-70bd-4f1d-a6a6-31b6faa3575f",
     "name": "Catalizador de Enjambre",
     "description": "Motor del combo de bajo coste",
-    "rarity": "Rare",
+    "rarity": "Uncommon",
     "main_set": "tcg_base_2026",
     "image": "/assets/local_cards/gordona/contento.jpg",
     "tcg_available": true,
@@ -116,7 +135,33 @@
       "manaCost": 3
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-11-04T13:50:20.067712+00:00"
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
+  },
+  {
+    "id": "fada65d1-38b0-4676-92c9-8becd5585fe2",
+    "name": "Catalizador de Enjambre (Edición Legendaria)",
+    "description": "Motor del combo de bajo coste",
+    "rarity": "Legendary",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/gordona/contento.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 2,
+      "charge": false,
+      "health": 3,
+      "effects": [
+        {
+          "value": 1,
+          "action": "buff_board",
+          "target": "self",
+          "statTarget": "both"
+        }
+      ],
+      "manaCost": 3
+    },
+    "created_at": "2026-11-06T16:07:21.404245+00:00",
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
   },
   {
     "id": "e407a5ce-98a2-4225-874c-6c668eac57c3",
@@ -198,7 +243,7 @@
     "id": "1312ed10-cee8-473d-8ff9-25d88a998df1",
     "name": "Coloso de Piedra",
     "description": "Muralla inamovible de juego tardío",
-    "rarity": "Epic",
+    "rarity": "Rare",
     "main_set": "tcg_base_2026",
     "image": "/assets/local_cards/stickers/posta_crema.webp",
     "tcg_available": true,
@@ -218,11 +263,62 @@
       "manaCost": 6
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-11-05T03:43:22.712178+00:00"
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
+  },
+  {
+    "id": "43710515-4dbe-4309-9d3f-5ea78e3b4b96",
+    "name": "Coloso de Piedra (Edición Legendaria)",
+    "description": "Muralla inamovible de juego tardío",
+    "rarity": "Legendary",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/stickers/posta_crema.webp",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "taunt": true,
+      "attack": 5,
+      "charge": false,
+      "health": 8,
+      "effects": [
+        {
+          "value": 3,
+          "action": "shield",
+          "target": "self"
+        }
+      ],
+      "manaCost": 6
+    },
+    "created_at": "2026-11-06T16:07:21.404245+00:00",
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
   },
   {
     "id": "d30c5f14-bea4-4785-a102-9bca795b99fe",
     "name": "Dragón Ancestral Neutral",
+    "description": "Gran amenaza neutra para cerrar partidas",
+    "rarity": "Rare",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2026/posta_controversy.jpeg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 6,
+      "charge": false,
+      "health": 6,
+      "effects": [
+        {
+          "value": 3,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 6
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-11-06T16:09:57.98072+00:00"
+  },
+  {
+    "id": "ffe2acd3-6d3f-4103-97f5-251ab5bbf680",
+    "name": "Dragón Ancestral Neutral (Edición Legendaria)",
     "description": "Gran amenaza neutra para cerrar partidas",
     "rarity": "Legendary",
     "main_set": "tcg_base_2026",
@@ -242,12 +338,37 @@
       ],
       "manaCost": 6
     },
-    "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:26:51.818596+00:00"
+    "created_at": "2026-11-06T16:09:57.98072+00:00",
+    "updated_at": "2026-11-06T16:09:57.98072+00:00"
   },
   {
     "id": "17c10b3f-763d-4842-a574-935e00d1295f",
     "name": "Dragón de Asedio",
+    "description": "Rematador devastador con impacto directo",
+    "rarity": "Rare",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2025ext/posta_2013.jpg",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 7,
+      "charge": false,
+      "health": 7,
+      "effects": [
+        {
+          "value": 5,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 7
+    },
+    "created_at": "2026-10-29T12:15:17.313503+00:00",
+    "updated_at": "2026-11-06T16:09:57.98072+00:00"
+  },
+  {
+    "id": "5283aaa0-f569-4a22-8194-d39f0cd63cd5",
+    "name": "Dragón de Asedio (Edición Legendaria)",
     "description": "Rematador devastador con impacto directo",
     "rarity": "Legendary",
     "main_set": "tcg_base_2026",
@@ -267,8 +388,8 @@
       ],
       "manaCost": 7
     },
-    "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:28:05.195263+00:00"
+    "created_at": "2026-11-06T16:09:57.98072+00:00",
+    "updated_at": "2026-11-06T16:09:57.98072+00:00"
   },
   {
     "id": "b6695e54-c32d-41b6-8276-02c06aeb6560",
@@ -299,7 +420,7 @@
     "id": "fc46f19f-816a-4473-954e-b593172fb842",
     "name": "Elemental de Fuego",
     "description": "Impacto inmediato al entrar al tablero",
-    "rarity": "Epic",
+    "rarity": "Rare",
     "main_set": "tcg_base_2026",
     "image": "/assets/local_cards/base2025/gino_amazed.webp",
     "tcg_available": true,
@@ -318,13 +439,38 @@
       "manaCost": 5
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:28:48.094932+00:00"
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
+  },
+  {
+    "id": "1e59c3c4-31cf-4d6c-99a6-ad8d9bc9fc24",
+    "name": "Elemental de Fuego (Edición Legendaria)",
+    "description": "Impacto inmediato al entrar al tablero",
+    "rarity": "Legendary",
+    "main_set": "tcg_base_2026",
+    "image": "/assets/local_cards/base2025/gino_amazed.webp",
+    "tcg_available": true,
+    "tcg_combat_data": {
+      "type": "creature",
+      "attack": 5,
+      "charge": false,
+      "health": 5,
+      "effects": [
+        {
+          "value": 2,
+          "action": "damage",
+          "target": "opponent"
+        }
+      ],
+      "manaCost": 5
+    },
+    "created_at": "2026-11-06T16:07:21.404245+00:00",
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
   },
   {
     "id": "f3bdb11d-0964-42b4-8512-cada5769231e",
     "name": "Enjambre Furioso",
     "description": "Potencia la ofensiva combinada",
-    "rarity": "Rare",
+    "rarity": "Uncommon",
     "main_set": "tcg_base_2026",
     "image": "/assets/local_cards/gordona/right.jpg",
     "tcg_available": true,
@@ -350,7 +496,7 @@
       "manaCost": 2
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-11-04T20:33:46.445192+00:00"
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
   },
   {
     "id": "c6683487-963d-4d18-bd2f-e6f6ff3c398f",
@@ -467,7 +613,7 @@
     "id": "7f8d30dc-4eb4-4de9-8ab7-8de8be32527a",
     "name": "Golpe Cero",
     "description": "Daño masivo directo de remate",
-    "rarity": "Epic",
+    "rarity": "Rare",
     "main_set": "tcg_base_2026",
     "image": "/assets/local_cards/base2025/mas_90mil.webp",
     "tcg_available": true,
@@ -486,7 +632,7 @@
       "manaCost": 3
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:32:47.565598+00:00"
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
   },
   {
     "id": "08ef796f-3913-41f7-9e35-1c7ba6c8156e",
@@ -561,7 +707,7 @@
     "id": "fc98f3bd-c300-4225-a61d-01eeef236046",
     "name": "Ocurrencia Resonance",
     "description": "Rematador por cantidad de jugadas",
-    "rarity": "Epic",
+    "rarity": "Rare",
     "main_set": "tcg_base_2026",
     "image": "/assets/local_cards/base2026/santerk_viajero.jpeg",
     "tcg_available": true,
@@ -581,7 +727,7 @@
       "manaCost": 4
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-11-01T02:01:25.552589+00:00"
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
   },
   {
     "id": "4bd36732-a9e5-44f4-9ce9-63f2102fb8de",
@@ -656,7 +802,7 @@
     "id": "c661f33e-588c-4865-83af-b170b9cd50c5",
     "name": "Purga de Fuego",
     "description": "Limpieza de amenazas enemigas",
-    "rarity": "Rare",
+    "rarity": "Uncommon",
     "main_set": "tcg_base_2026",
     "image": "/assets/local_cards/kelano/kelano_vino_gun.webp",
     "tcg_available": true,
@@ -675,7 +821,7 @@
       "manaCost": 4
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:39:36.933645+00:00"
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
   },
   {
     "id": "4c87b200-525f-47b5-b2eb-8ff1ec8e2d91",
@@ -711,7 +857,7 @@
     "id": "70446742-e0dc-4546-976e-744daad12022",
     "name": "Sabueso Furioso",
     "description": "Agresivo de bajo coste para presionar",
-    "rarity": "Rare",
+    "rarity": "Uncommon",
     "main_set": "tcg_base_2026",
     "image": "/assets/local_cards/base2026/water_kevin.jpeg",
     "tcg_available": true,
@@ -724,13 +870,13 @@
       "manaCost": 2
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:41:15.402404+00:00"
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
   },
   {
     "id": "36860609-a44c-4317-a46e-ee49716a8f27",
     "name": "Tirador de Vanguardia",
     "description": "Gran potencia de ataque inicial",
-    "rarity": "Rare",
+    "rarity": "Uncommon",
     "main_set": "tcg_base_2026",
     "image": "/assets/local_cards/base2026ext/music_posta.jpeg",
     "tcg_available": true,
@@ -743,6 +889,6 @@
       "manaCost": 3
     },
     "created_at": "2026-10-29T12:15:17.313503+00:00",
-    "updated_at": "2026-10-30T18:41:51.629172+00:00"
+    "updated_at": "2026-11-06T16:07:21.404245+00:00"
   }
 ]

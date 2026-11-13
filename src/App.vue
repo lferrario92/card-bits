@@ -4,6 +4,7 @@ import { RouterView, useRouter, useRoute } from 'vue-router'
 import BottomNav from './components/BottomNav.vue'
 import FloatingBoosterBubble from './components/FloatingBoosterBubble.vue'
 import { useCreditsAutoRefresh } from './composables/useCredits'
+import { useDeckSync } from './composables/useDeckSync'
 
 const router = useRouter()
 const route = useRoute()
@@ -12,6 +13,9 @@ const route = useRoute()
 // it fresh while the app stays open. Lives here so it runs no matter which
 // view is mounted.
 useCreditsAutoRefresh()
+// Refreshes localStorage deck snapshots with the backend's current card
+// values (matched by card id) — see composables/useDeckSync.ts.
+useDeckSync()
 
 const currentPath = computed(() => route.path)
 // The battle view is a full-screen surface with no bottom nav; every other

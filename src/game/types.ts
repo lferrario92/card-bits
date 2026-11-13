@@ -62,8 +62,18 @@ export interface CardData {
   effects: CardEffect[]
 }
 
-/** A card definition without a runtime id, used to build decks. */
-export type CardTemplate = Omit<CardData, 'id'>
+/**
+ * A card definition without a runtime id, used to build decks.
+ *
+ * `cardId` is the database card id (`cards.id`) when known. Decks store full
+ * snapshots of card data, so the app-start sync (`useDeckSync`) keys off this
+ * to refresh them when the backend rebalances a card. Optional because static
+ * predefined decks and decks saved before id-tracking don't carry it — the
+ * sync backfills it by matching card titles (unique in the catalog).
+ */
+export type CardTemplate = Omit<CardData, 'id'> & {
+  cardId?: string
+}
 
 /** A participant in the battle (player or opponent). */
 export interface Entity {

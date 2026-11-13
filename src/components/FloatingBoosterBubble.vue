@@ -17,6 +17,10 @@ const BUBBLE_ROUTES = new Set(['/', '/drift-wall', '/profile', '/decks'])
 const visible = computed(() => {
   if (!isAuthenticated.value) return false
   if (suppressed.value) return false
+  // No affordable booster → nothing to open from here; the bubble would
+  // only ever show a gray 0. (The market stays reachable via the bottom
+  // nav's "Boosters" link.) Also hides while the balance is still loading.
+  if (openableBoosters.value <= 0) return false
   return BUBBLE_ROUTES.has(route.path)
 })
 
@@ -52,10 +56,10 @@ function openBoosters() {
           />
         </span>
 
-        <!-- Openable-booster count: floor(credits / 5000), max 4. -->
+        <!-- Openable-booster count: floor(credits / 5000), max 4. The bubble
+             only renders above 0, so the badge is always the active color. -->
         <span
-          class="absolute -top-1 -right-1 min-w-[22px] h-[22px] px-1 rounded-full border-2 border-white dark:border-gray-900 text-[11px] font-bold leading-none flex items-center justify-center shadow"
-          :class="openableBoosters > 0 ? 'bg-rose-500 text-white' : 'bg-gray-400 text-white'"
+          class="absolute -top-1 -right-1 min-w-[22px] h-[22px] px-1 rounded-full border-2 border-white dark:border-gray-900 bg-rose-500 text-white text-[11px] font-bold leading-none flex items-center justify-center shadow"
           aria-hidden="true"
         >
           {{ openableBoosters }}

@@ -114,6 +114,52 @@ export function useDecks() {
     return deck.cards.length >= MIN_CARDS && deck.cards.length <= MAX_CARDS
   }
 
+  /**
+   * Overwrites deck card snapshots with fresher backend data (balance
+   * changes made server-side), so stored decks always fight with current
+   * card values. Cards are matched by `cardId` when present, falling back to
+   * the title for decks saved before ids existed (those get `cardId`
+   * backfilled on the way). Cards missing from `freshCards` — no longer
+   * owned or not TCG-available — are left untouched rather than stripped,
+   * so a sync can never silently empty a deck.
+   *
+   * Returns true when anything changed and was persisted.
+   */
+  function refreshCards(freshCards: CardTemplate[]): boolean {
+    if (decks.value.length === 0 || freshCards.length === 0) return false
+
+    const byId = new Map<string, CardTemplate>()
+    const byTitle = new Map<string, CardTemplate>()
+    for (const fresh of freshCards) {
+      if (fresh.cardId) byId.set(fresh.cardId, fresh)
+      byTitle.set(fresh.title, fresh)
+    }
+
+    let changed = false
+    for (const deck of decks.value) {
+      let deckChanged = false
+      const next = deck.cards.map((old) => {
+        const fresh =
+          (old.cardId ? byId.get(old.cardId) : undefined) ?? byTitle.get(old.title)
+        if (!fresh) return old
+        // Clone: decks must not share template objects with the fetch result
+        // (or with each other). JSON compare also detects the missing-cardId
+        // legacy case, so a backfill counts as a change worth persisting.
+        const merged: CardTemplate = { ...fresh, effects: fresh.effects.map(e => ({ ...e })) }
+        if (JSON.stringify(merged) === JSON.stringify(old)) return old
+        deckChanged = true
+        return merged
+      })
+      if (deckChanged) {
+        deck.cards = next
+        changed = true
+      }
+    }
+
+    if (changed) persist()
+    return changed
+  }
+
   function canUseDeck(deck: Deck, userCards: CardTemplate[]): boolean {
     const userCardKeys = new Set(userCards.map(cardKey))
     return deck.cards.every(card => userCardKeys.has(cardKey(card)))
@@ -131,6 +177,7 @@ export function useDecks() {
     selectCurrent,
     addCard,
     removeCard,
+    refreshCards,
     MAX_CARDS,
     MIN_CARDS,
     MAX_COPIES,

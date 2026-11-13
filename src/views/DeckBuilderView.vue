@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useDecks } from '@/game/useDecks'
 import { cardKey } from '@/game/decks'
 import type { CardTemplate } from '@/game/types'
@@ -137,7 +138,10 @@ async function loadUserCards() {
   cardsLoading.value = true
   cardsError.value = ''
   try {
-    userCards.value = await fetchUserCards(user.value.id)
+    // Deck library: only cards the player actually owns. 0-copy rows may
+    // still exist in `user_cards` but can never be added to a deck.
+    const owned = await fetchUserCards(user.value.id)
+    userCards.value = owned.filter((card) => card.count > 0)
   } catch (err) {
     console.error('Error loading user cards:', err)
     cardsError.value = err instanceof Error ? err.message : 'Failed to load cards'
@@ -147,6 +151,43 @@ async function loadUserCards() {
 }
 
 onMounted(loadUserCards)
+
+// --- Guard redirect toast ---------------------------------------------------
+// The router guard (main.ts) bounces deckless players here when they try to
+// fight; this explains why instead of silently swapping views.
+const route = useRoute()
+const router = useRouter()
+const guardToast = ref<string | null>(null)
+let guardToastTimer: number | null = null
+
+const GUARD_REASONS: Record<string, string> = {
+  'no-decks': 'You have no decks yet — build one with your cards to start fighting.',
+  'empty-deck': 'Your deck is empty — add cards to it before you can fight.',
+}
+
+function consumeGuardReason() {
+  const reason = typeof route.query.reason === 'string' ? route.query.reason : ''
+  const message = GUARD_REASONS[reason]
+  if (!message) return
+  guardToast.value = message
+  if (guardToastTimer !== null) window.clearTimeout(guardToastTimer)
+  guardToastTimer = window.setTimeout(() => {
+    guardToast.value = null
+    guardToastTimer = null
+  }, 5000)
+  // Drop the flag so a refresh doesn't replay the toast.
+  const query = { ...route.query }
+  delete query.reason
+  void router.replace({ query })
+}
+
+onMounted(consumeGuardReason)
+onUnmounted(() => {
+  if (guardToastTimer !== null) {
+    window.clearTimeout(guardToastTimer)
+    guardToastTimer = null
+  }
+})
 
 function openDeck(id: string) {
   editingId.value = id
@@ -507,6 +548,18 @@ function closeCardModal() {
       </div>
     </div>
   </div>
+
+  <!-- Guard redirect toast: why the app sent you here from Fight -->
+  <transition name="toast">
+    <div
+      v-if="guardToast"
+      class="fixed top-16 left-1/2 -translate-x-1/2 z-[70] max-w-[min(90vw,450px)] flex items-start gap-2 px-4 py-3 rounded-xl bg-amber-500 text-white text-sm font-semibold shadow-lg"
+      role="alert"
+    >
+      <span aria-hidden="true">⚠️</span>
+      <span>{{ guardToast }}</span>
+    </div>
+  </transition>
 </template>
 <style scoped>
 .predefinedDecks {
@@ -521,4 +574,17 @@ function closeCardModal() {
   background-position: center;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
+
+/* Guard redirect toast. Tailwind v4 centers via the `translate:` property,
+   so animating `transform` here is safe — it can't override centering. */
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
 </style>

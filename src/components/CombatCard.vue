@@ -41,6 +41,7 @@ const props = withDefaults(defineProps<Props>(), {
         <div v-if="card.effects && card.effects.length > 0" class="mt-1 pt-1 border-t border-gray-600">
           <div v-for="(effect, idx) in card.effects" :key="idx" class="text-gray-300">
             {{ effect.action }} {{ effect.value }} to {{ effect.target === 'all' ? 'all' : effect.target }}
+            <span v-if="effect.statTarget">({{ effect.statTarget }})</span>
           </div>
         </div>
       </div>
