@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import type { Side } from '@/game/types'
 import type { BattleState } from '@/game/useBattle'
 import type { RewardState } from '@/composables/useBattleController'
+import { useCredits, CREDIT_STEP } from '@/composables/useCredits'
+import { useAuth } from '@/composables/useAuth'
 
 const props = defineProps<{
   /** Seat-neutral result: `'player'` is the local (active) player. */
@@ -23,9 +25,60 @@ const emit = defineEmits<{ reset: []; menu: []; decks: [] }>()
 const won = computed(() => props.winner === 'player')
 const opponentName = computed(() => props.state.opponent.name || 'Oponente')
 
+// Booster progress display: the UI never shows credit amounts, only how
+// close the balance is to the next booster (5 segments of CREDIT_STEP/5).
+const { credits, openableBoosters } = useCredits()
+
+/**
+ * Filled segments (0–5) toward the next multiple of CREDIT_STEP — full at
+ * exactly 5k/10k/… (a booster is affordable), e.g. 14k → 4/5, 1k → 1/5.
+ * Reads the live balance, so the +1,000 victory award ticks it up by one
+ * segment when the RPC lands.
+ */
+const segments = computed(() => {
+  const balance = credits.value
+  if (balance === null || balance <= 0) return 0
+  const remainder = balance % CREDIT_STEP
+  return remainder === 0 ? 5 : Math.floor(remainder / (CREDIT_STEP / 5))
+})
+
 /** A fallen side shows its final HP in red. */
 function hpClass(hp: number): string {
   return hp > 0 ? 'text-white' : 'text-rose-400'
+}
+
+const { displayName } = useAuth()
+
+/**
+ * Shares the outcome on WhatsApp: who won/lost, a compact match resume
+ * (final HP, shields, board, hand, turns), and the app link — the current
+ * domain — as the last line. Opens the wa.me composer with the text
+ * prefilled; the user still picks the chat themselves.
+ */
+function shareOutcome(): void {
+  const s = props.state
+  const won = props.winner === 'player'
+  const me = displayName.value
+  const opponent = opponentName.value
+  const text = [
+    won ? '🏆 ¡VICTORIA! en Bounce Cards' : '💀 DERROTA en Bounce Cards',
+    `Ganador: ${won ? `Yo (${me})` : opponent}`,
+    `Perdedor: ${won ? opponent : `Yo (${me})`}`,
+    '',
+    `📊 Resumen (yo vs ${opponent}):`,
+    `❤️ Vida final: ${s.player.hp}/${s.player.maxHp} vs ${s.opponent.hp}/${s.opponent.maxHp}`,
+    `🛡 Escudos: ${s.player.shield} vs ${s.opponent.shield}`,
+    `⚔ Criaturas en tablero: ${s.playerBoard.length} vs ${s.opponentBoard.length}`,
+    `🃏 Cartas en mano: ${s.hand.length} vs ${s.opponentHand.length}`,
+    `⏱ Turno: ${s.turn}`,
+    '',
+    `Juega tú también: ${window.location.origin}`,
+  ].join('\n')
+  window.open(
+    `https://wa.me/?text=${encodeURIComponent(text)}`,
+    '_blank',
+    'noopener,noreferrer',
+  )
 }
 </script>
 
@@ -108,8 +161,8 @@ function hpClass(hp: number): string {
               : 'border-amber-400/30 bg-amber-500/10'"
         >
           <div v-if="reward === 'claimed'" class="flex items-center justify-center gap-2">
-            <span class="text-2xl">🪙</span>
-            <span class="font-black text-amber-300">+1,000 Créditos obtenidos</span>
+            <span class="text-2xl">📦</span>
+            <span class="font-black text-amber-300">+1/5 de Booster</span>
           </div>
           <div v-else-if="reward === 'failed'" class="text-sm font-bold text-rose-300">
             ⚠️ No se pudo acreditar el premio
@@ -117,12 +170,48 @@ function hpClass(hp: number): string {
           <div v-else class="text-sm font-bold text-amber-200/90 animate-pulse">
             Acreditando premio…
           </div>
+
+          <!-- Booster progress: 5 segments of 1,000 toward the next booster.
+               Reads the live balance, so the award ticks it up one segment. -->
+          <div class="mt-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-black uppercase tracking-wider text-white/50">Próximo booster</span>
+              <span class="text-[11px] font-black" :class="segments >= 5 ? 'text-emerald-300' : 'text-amber-300'">{{ segments }}/5</span>
+            </div>
+            <div class="flex gap-1" role="img" :aria-label="`Progreso del booster: ${segments} de 5`">
+              <span
+                v-for="i in 5"
+                :key="i"
+                class="h-2 flex-1 rounded-full transition-colors duration-500"
+                :class="i <= segments ? (segments >= 5 ? 'bg-emerald-400' : 'bg-amber-400') : 'bg-white/15'"
+              />
+            </div>
+            <p v-if="openableBoosters > 0" class="mt-1.5 text-[11px] font-bold text-emerald-300">
+              ¡Puedes abrir {{ openableBoosters === 1 ? 'un booster' : `${openableBoosters} boosters` }}!
+            </p>
+          </div>
         </div>
 
-        <!-- Defeat summary (credits are only mentioned when they're at stake) -->
+        <!-- Defeat summary (online: show booster progress instead of credit talk) -->
         <div v-else-if="!won" class="mb-4 rounded-2xl border border-white/10 bg-white/5 p-3">
-          <div v-if="rewardEnabled" class="text-sm font-bold text-white/80">0 créditos ganados</div>
-          <p class="text-[11px] text-white/50 leading-relaxed" :class="rewardEnabled ? 'mt-1' : ''">
+          <template v-if="rewardEnabled">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-black uppercase tracking-wider text-white/50">Próximo booster</span>
+              <span class="text-[11px] font-black" :class="segments >= 5 ? 'text-emerald-300' : 'text-amber-300'">{{ segments }}/5</span>
+            </div>
+            <div class="flex gap-1" role="img" :aria-label="`Progreso del booster: ${segments} de 5`">
+              <span
+                v-for="i in 5"
+                :key="i"
+                class="h-2 flex-1 rounded-full transition-colors duration-500"
+                :class="i <= segments ? (segments >= 5 ? 'bg-emerald-400' : 'bg-amber-400') : 'bg-white/15'"
+              />
+            </div>
+            <p v-if="openableBoosters > 0" class="mt-1.5 text-[11px] font-bold text-emerald-300">
+              ¡Puedes abrir {{ openableBoosters === 1 ? 'un booster' : `${openableBoosters} boosters` }}!
+            </p>
+          </template>
+          <p class="text-[11px] text-white/50 leading-relaxed" :class="rewardEnabled ? 'mt-2' : ''">
             Consejo: guarda maná para reaccionar a los taunts y ataca al héroe cuando el tablero quede despejado.
             ¡Vuelve al Deckbuilder y sal por la revancha!
           </p>
@@ -149,6 +238,12 @@ function hpClass(hp: number): string {
             Ir al Deckbuilder
           </button>
         </div>
+        <button
+          @click="shareOutcome"
+          class="w-full mt-2 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#1EBE5A] text-white text-sm font-bold active:scale-[0.98] transition"
+        >
+          💬 Compartir resultado en WhatsApp
+        </button>
       </div>
     </div>
   </div>

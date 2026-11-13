@@ -16,12 +16,13 @@ const {
   currentDeckId,
   currentDeck,
   getDeck,
-  createDeckAndSelect,
+  createDeck,
   deleteDeck,
   renameDeck,
   selectCurrent,
   addCard,
   removeCard,
+  isValidDeck,
   MAX_CARDS,
   MIN_CARDS,
   MAX_COPIES,
@@ -163,6 +164,7 @@ let guardToastTimer: number | null = null
 const GUARD_REASONS: Record<string, string> = {
   'no-decks': 'You have no decks yet — build one with your cards to start fighting.',
   'empty-deck': 'Your deck is empty — add cards to it before you can fight.',
+  'small-deck': 'Your deck needs 10–15 cards before you can fight.',
 }
 
 function consumeGuardReason() {
@@ -205,7 +207,7 @@ function backToMenu() {
 }
 
 function newDeck() {
-  const deck = createDeckAndSelect()
+  const deck = createDeck()
   editingId.value = deck.id
   nameInput.value = deck.name
 }
@@ -236,7 +238,7 @@ function typeLabel(type: string): string {
 
 function usePredefinedDeck(deck: any) {
   // Convert predefined deck to a custom deck and use it
-  const newDeck = createDeckAndSelect(deck.name)
+  const newDeck = createDeck(deck.name)
   newDeck.cards = deck.cards.map((c: any) => ({
     ...c,
     title: c.name,
@@ -394,8 +396,11 @@ function closeCardModal() {
                 Edit
               </button>
               <button v-if="!isCurrent(deck.id)" @click="selectCurrent(deck.id)"
-                class="flex-1 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold">
-                Use
+                :disabled="!isValidDeck(deck)"
+                :title="isValidDeck(deck) ? 'Use this deck for battles' : 'Needs 10–15 cards to fight'"
+                class="flex-1 py-1.5 rounded-lg text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+                :class="isValidDeck(deck) ? 'bg-primary/10 text-primary' : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'">
+                {{ isValidDeck(deck) ? 'Use' : 'Not ready' }}
               </button>
               <button @click="confirmDelete(deck.id, deck.name)" title="Delete deck"
                 class="w-8 py-1.5 rounded-lg bg-rose-500/10 text-rose-500 text-xs font-semibold">
@@ -428,8 +433,11 @@ function closeCardModal() {
 
       <div class="flex items-center gap-2 mt-2">
         <button v-if="editingDeck && !isCurrent(editingDeck.id)" @click="selectCurrent(editingDeck.id)"
-          class="flex-1 py-2 rounded-lg bg-primary text-white text-xs font-bold active:scale-[0.98] transition">
-          Use as current deck
+          :disabled="!isValidDeck(editingDeck)"
+          :title="isValidDeck(editingDeck) ? 'Use this deck for battles' : 'Add cards until the deck has 10–15'"
+          class="flex-1 py-2 rounded-lg text-xs font-bold active:scale-[0.98] transition disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
+          :class="isValidDeck(editingDeck) ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'">
+          {{ isValidDeck(editingDeck) ? 'Use as current deck' : `Need ${MIN_CARDS} cards to fight` }}
         </button>
         <div v-else-if="editingDeck" class="flex-1 py-2 rounded-lg bg-primary/10 text-primary text-xs font-bold text-center">
           ✓ Current deck

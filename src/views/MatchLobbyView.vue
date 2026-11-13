@@ -3,12 +3,17 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useOnlineMatch } from '@/composables/useOnlineMatch'
 import { useAuth } from '@/composables/useAuth'
+import { useDecks } from '@/game/useDecks'
 
 const router = useRouter()
 const route = useRoute()
 const { displayName, isAuthenticated } = useAuth()
 const shareStatus = ref('')
 const { match, role, waiting, error, createMatch, joinMatch, teardown } = useOnlineMatch()
+const { currentDeck, isValidDeck } = useDecks()
+
+/** Online play needs a fightable deck (10–15 cards), same rule as VS AI. */
+const deckReady = computed(() => !!currentDeck.value && isValidDeck(currentDeck.value))
 
 const mode = ref<'menu' | 'hosting' | 'joining'>('menu')
 const joinCode = ref('')
@@ -23,6 +28,7 @@ function enterBattle() {
 }
 
 async function startHosting() {
+  if (!deckReady.value) return
   mode.value = 'hosting'
   const row = await createMatch(() => {
     // Opponent joined: jump straight into the battle.
@@ -32,6 +38,7 @@ async function startHosting() {
 }
 
 async function submitJoin() {
+  if (!deckReady.value) return
   const row = await joinMatch(joinCode.value)
   if (row) enterBattle()
 }
@@ -131,8 +138,19 @@ onUnmounted(teardown)
       <template v-else>
         <!-- Menu -->
         <template v-if="mode === 'menu'">
-          <button @click="startHosting"
-            class="w-full text-left rounded-2xl border-2 border-emerald-200 dark:border-emerald-900/60 bg-white dark:bg-gray-800 p-4 shadow-sm active:scale-[0.99] transition hover:border-emerald-400">
+          <div v-if="!deckReady"
+            class="rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/30 p-4">
+            <p class="text-sm text-amber-800 dark:text-amber-200 font-semibold">
+              Your deck needs 10–15 cards before you can play online.
+            </p>
+            <router-link to="/decks"
+              class="mt-2 inline-block px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-bold">
+              Go to Deckbuilder
+            </router-link>
+          </div>
+
+          <button @click="startHosting" :disabled="!deckReady"
+            class="w-full text-left rounded-2xl border-2 border-emerald-200 dark:border-emerald-900/60 bg-white dark:bg-gray-800 p-4 shadow-sm active:scale-[0.99] transition hover:border-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-emerald-200 dark:disabled:hover:border-emerald-900/60">
             <div class="flex items-center gap-3">
               <span class="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500 text-white text-lg font-bold">＋</span>
               <div>
@@ -154,7 +172,7 @@ onUnmounted(teardown)
               <input v-model="joinCode" @keyup.enter="submitJoin" maxlength="6"
                 placeholder="CODE"
                 class="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm font-mono uppercase tracking-[0.3em] text-center placeholder:tracking-normal placeholder:font-sans focus:outline-none focus:ring-2 focus:ring-primary" />
-              <button @click="submitJoin" :disabled="joinCode.trim().length < 4"
+              <button @click="submitJoin" :disabled="joinCode.trim().length < 4 || !deckReady"
                 class="flex-shrink-0 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold disabled:opacity-40 active:scale-[0.98] transition">
                 Join
               </button>

@@ -31,12 +31,25 @@ function ensureInit() {
   const loaded = loadDecks()
   decks.value = loaded
   const stored = getStoredCurrentDeckId()
-  currentDeckId.value = stored && loaded.some(d => d.id === stored) ? stored : (loaded[0]?.id ?? null)
+  const storedDeck = stored ? loaded.find(d => d.id === stored) : undefined
+  // The current deck is the fight deck, so prefer one that can actually
+  // fight (10–15 cards): stored choice → first valid deck → whatever
+  // exists (the router guard explains the last case when they try to fight).
+  const chosen =
+    storedDeck && isValidDeck(storedDeck)
+      ? storedDeck
+      : (loaded.find(d => isValidDeck(d)) ?? storedDeck ?? loaded[0] ?? null)
+  currentDeckId.value = chosen?.id ?? null
   persist()
 }
 
 function cloneTemplate(c: CardTemplate): CardTemplate {
   return { ...c, effects: c.effects.map(e => ({ ...e })) }
+}
+
+/** A deck is only usable (fight / select as current) within 10–15 cards. */
+function isValidDeck(deck: Deck): boolean {
+  return deck.cards.length >= MIN_CARDS && deck.cards.length <= MAX_CARDS
 }
 
 export function useDecks() {
@@ -56,10 +69,15 @@ export function useDecks() {
     return d.cards.map(cloneTemplate)
   }
 
-  function createDeckAndSelect(name?: string): Deck {
+  /**
+   * Creates a new empty draft deck. Deliberately does NOT make it the
+   * current deck: a deck only becomes current once it holds 10–15 cards
+   * (see selectCurrent; addCard promotes the first deck that finishes
+   * while nothing fightable is selected).
+   */
+  function createDeck(name?: string): Deck {
     const deck: Deck = { id: makeId(), name: name?.trim() || 'New Deck', cards: [] }
     decks.value = [...decks.value, deck]
-    currentDeckId.value = deck.id
     persist()
     return deck
   }
@@ -83,7 +101,9 @@ export function useDecks() {
   }
 
   function selectCurrent(id: string): void {
-    if (!decks.value.some(d => d.id === id)) return
+    const deck = decks.value.find(d => d.id === id)
+    // Only a fightable deck (10–15 cards) can become the current one.
+    if (!deck || !isValidDeck(deck)) return
     currentDeckId.value = id
     persist()
   }
@@ -94,6 +114,13 @@ export function useDecks() {
     if (deck.cards.length >= MAX_CARDS) return false
     if (deck.cards.filter(c => cardKey(c) === cardKey(card)).length >= MAX_COPIES) return false
     deck.cards = [...deck.cards, cloneTemplate(card)]
+    // First deck to reach a legal size becomes the fight deck automatically
+    // while nothing fightable is selected — saves the extra "Use" click on
+    // a player's first finished deck. An already-valid current deck wins.
+    if (isValidDeck(deck)) {
+      const current = currentDeck.value
+      if (!current || !isValidDeck(current)) currentDeckId.value = deck.id
+    }
     persist()
     return true
   }
@@ -108,10 +135,6 @@ export function useDecks() {
     deck.cards = next
     persist()
     return true
-  }
-
-  function isValidDeck(deck: Deck): boolean {
-    return deck.cards.length >= MIN_CARDS && deck.cards.length <= MAX_CARDS
   }
 
   /**
@@ -171,7 +194,7 @@ export function useDecks() {
     currentDeck,
     getDeck,
     currentDeckTemplates,
-    createDeckAndSelect,
+    createDeck,
     deleteDeck,
     renameDeck,
     selectCurrent,

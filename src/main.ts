@@ -46,27 +46,34 @@ router.beforeEach(async (to) => {
     return { name: 'Login', query: { redirect: to.fullPath } }
   }
 
-  // A battle needs a deck the player built themselves — there is no built-in
-  // starter deck any more. Send deckless players to the deck builder instead
-  // of starting them with an empty hand.
+  // A battle needs a deck the player built themselves within the 10–15 card
+  // limits — there is no built-in starter deck any more. Send players whose
+  // current deck can't fight to the deck builder instead of starting them
+  // with an illegal hand.
   //
   // Online matches carrying a ?code= are deliberately exempt: bouncing out of
   // the lobby there would strand the opponent waiting for a seat that never
-  // arrives, and they reach the battle through /enemies anyway.
+  // arrives, and they reach the battle through /enemies anyway (the lobby
+  // checks the deck before creating or joining a match).
   const needsDeck =
     to.name === 'Enemies' || (to.name === 'BounceCards' && typeof to.query.code !== 'string')
   if (needsDeck) {
-    const { decks, currentDeckTemplates, selectCurrent } = useDecks()
-    if (currentDeckTemplates().length === 0) {
-      // Current deck is empty (or missing): prefer another deck that has
-      // cards over bouncing the player out of the fight flow.
-      const fallback = decks.value.find(d => d.cards.length > 0)
+    const { decks, currentDeck, selectCurrent, isValidDeck } = useDecks()
+    if (!currentDeck.value || !isValidDeck(currentDeck.value)) {
+      // Current deck is missing or outside 10–15 cards: prefer another deck
+      // that can fight over bouncing the player out of the fight flow.
+      const fallback = decks.value.find(d => isValidDeck(d))
       if (fallback) {
         selectCurrent(fallback.id)
       } else {
         // Flag the bounce so the deck view can explain it (see the toast in
-        // DeckBuilderView): "no decks at all" vs "decks exist but all empty".
-        const reason = decks.value.length === 0 ? 'no-decks' : 'empty-deck'
+        // DeckBuilderView): "no decks" vs "all empty" vs "none in 10–15".
+        const reason =
+          decks.value.length === 0
+            ? 'no-decks'
+            : decks.value.every(d => d.cards.length === 0)
+              ? 'empty-deck'
+              : 'small-deck'
         return { name: 'Decks', query: { reason } }
       }
     }
