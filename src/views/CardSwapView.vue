@@ -594,7 +594,9 @@ onUnmounted(() => {
                 <span v-if="false" class="bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.name }}</span>
                 <span v-if="false" class="text-xs bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ booster.card_count }} cards · {{ booster.price }} credits</span>
               </button>
-              <span class="text-xs px-2 py-1 rounded backdrop-blur-sm">{{ booster.description }}</span>
+              <span
+                class="text-xs px-2 py-1 rounded backdrop-blur-sm"
+              >{{ booster.description }}</span>
             </div>
           </div>
         </div>

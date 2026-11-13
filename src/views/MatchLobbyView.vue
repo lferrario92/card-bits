@@ -46,22 +46,53 @@ function back() {
   }
 }
 
+const shareMessages = [
+  {
+    title: 'Big combat',
+    subtitle: 'quien se la banca contra mi?'
+  },
+  {
+    title: 'Big combat',
+    subtitle: 'who dares to face me'
+  },
+  {
+    title: 'Big combat',
+    subtitle: 'el que no entra es un pitocorto'
+  },
+  {
+    title: 'Big combat',
+    subtitle: 'veni a jugar, no soy tan bueno'
+  },
+  {
+    title: 'Big combat',
+    subtitle: 'frase provocativa 4'
+  }
+]
+
 async function shareLink() {
   const code = shareCode.value
   if (!code) return
   const url = `${window.location.origin}/online?code=${encodeURIComponent(code)}`
+  const randomMessage = shareMessages[Math.floor(Math.random() * shareMessages.length)]
+  const shareText = `${randomMessage.title}\n${randomMessage.subtitle}\n${url}`
   shareStatus.value = ''
+
+  // Always copy to clipboard using textarea method (reliable on all platforms)
+  const textArea = document.createElement('textarea')
+  textArea.value = shareText
+  textArea.style.position = 'fixed'
+  textArea.style.left = '-9999px'
+  document.body.appendChild(textArea)
+  textArea.select()
   try {
-    if (navigator.share) {
-      await navigator.share({ title: 'Join my card battle', text: `Code: ${code}`, url })
-      shareStatus.value = 'Shared!'
-    } else {
-      await navigator.clipboard.writeText(url)
-      shareStatus.value = 'Link copied!'
-    }
-  } catch {
-    shareStatus.value = ''
+    document.execCommand('copy')
+    shareStatus.value = 'Link copied!'
+  } catch (err) {
+    console.error('Copy failed:', err)
+    shareStatus.value = 'Failed to copy'
   }
+  document.body.removeChild(textArea)
+
   if (shareStatus.value) {
     window.setTimeout(() => (shareStatus.value = ''), 2000)
   }

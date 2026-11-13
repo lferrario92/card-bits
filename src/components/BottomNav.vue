@@ -12,7 +12,7 @@ const router = useRouter()
 const navItems = [
   { path: '/drift-wall', label: 'Home', icon: '🏠' },
   { path: '/enemies', label: 'Fight', icon: '⚔️' },
-  { path: '/online', label: 'Online', icon: '🌐' },
+  // { path: '/online', label: 'Online', icon: '🌐' },
   { path: '/decks', label: 'Decks', icon: '🗂️' },
   { path: '/card-swap', label: 'Boosters', icon: '📦' },
   { path: '/profile', label: 'Profile', icon: '👤' },
@@ -42,7 +42,11 @@ const navigate = (path: string) => {
         ]"
         :aria-current="isActive(item.path) ? 'page' : undefined"
       >
-        <span class="text-2xl" aria-hidden="true">{{ item.icon }}</span>
+        <span
+          class="text-2xl"
+          :class="isActive(item.path) ? '' : 'grayscale'"
+          aria-hidden="true"
+        >{{ item.icon }}</span>
         <span class="text-xs font-medium">{{ item.label }}</span>
         <div v-if="isActive(item.path)" class="w-full h-0.5 bg-primary rounded-full mt-1" aria-hidden="true" />
       </button>
