@@ -5,7 +5,7 @@
     "description": "Fast-paced aggressive deck focused on quick damage",
     "cards": [
       {
-        "name": "Duende Asaltante",
+        "name": "Maurito Asaltante",
         "image": "/assets/local_cards/achis/8.jpg",
         "type": "creature",
         "manaCost": 1,
@@ -22,7 +22,7 @@
         "rarity": "Common"
       },
       {
-        "name": "Chispa Incendiaria",
+        "name": "Rayo Heterosexualizador",
         "image": "/assets/local_cards/base2026/rayo_heterosexualizador.jpg",
         "type": "spell",
         "manaCost": 1,
@@ -39,7 +39,7 @@
         "charge": true
       },
       {
-        "name": "Sabueso Furioso",
+        "name": "Kevin acuatico",
         "image": "/assets/local_cards/base2026/water_kevin.jpeg",
         "type": "creature",
         "manaCost": 2,
@@ -50,7 +50,7 @@
         "charge": false
       },
       {
-        "name": "Ráfaga Lacerante",
+        "name": "Arma de doble filo",
         "image": "/assets/local_cards/base2025/santerk_drunk.jpg",
         "type": "spell",
         "manaCost": 2,
@@ -72,7 +72,7 @@
         "charge": true
       },
       {
-        "name": "Tirador de Vanguardia",
+        "name": "Posta bardo",
         "image": "/assets/local_cards/base2026ext/music_posta.jpeg",
         "type": "creature",
         "manaCost": 3,
@@ -83,7 +83,7 @@
         "charge": false
       },
       {
-        "name": "Golpe Cero",
+        "name": "Daño minimo",
         "image": "/assets/local_cards/base2025/mas_90mil.webp",
         "type": "spell",
         "manaCost": 3,
@@ -100,7 +100,7 @@
         "charge": true
       },
       {
-        "name": "Sabueso Furioso",
+        "name": "Kevin acuatico",
         "image": "/assets/local_cards/base2026/water_kevin.jpeg",
         "type": "creature",
         "manaCost": 2,
@@ -111,7 +111,7 @@
         "charge": false
       },
       {
-        "name": "Chispa Incendiaria",
+        "name": "Rayo Heterosexualizador",
         "image": "/assets/local_cards/base2026/rayo_heterosexualizador.jpg",
         "type": "spell",
         "manaCost": 1,
@@ -128,7 +128,7 @@
         "charge": true
       },
       {
-        "name": "Duende Asaltante",
+        "name": "Maurito Asaltante",
         "image": "/assets/local_cards/achis/8.jpg",
         "type": "creature",
         "manaCost": 1,
@@ -145,7 +145,7 @@
         "rarity": "Common"
       },
       {
-        "name": "Ráfaga Lacerante",
+        "name": "Arma de doble filo",
         "image": "/assets/local_cards/base2025/santerk_drunk.jpg",
         "type": "spell",
         "manaCost": 2,
@@ -174,7 +174,7 @@
     "description": "Defensive deck with shields and healing to outlast opponents",
     "cards": [
       {
-        "name": "Escudero Guardián",
+        "name": "Kustin Guardián",
         "image": "/assets/local_cards/base2026/sgt_kustin.jpeg",
         "type": "creature",
         "manaCost": 2,
@@ -266,7 +266,7 @@
         "taunt": true
       },
       {
-        "name": "Dragón de Asedio",
+        "name": "Posta 2015",
         "image": "/assets/local_cards/base2025ext/posta_2013.jpg",
         "type": "creature",
         "manaCost": 7,
@@ -283,7 +283,7 @@
         "charge": false
       },
       {
-        "name": "Escudero Guardián",
+        "name": "Kustin Guardián",
         "image": "/assets/local_cards/base2026/sgt_kustin.jpeg",
         "type": "creature",
         "manaCost": 2,
@@ -365,7 +365,7 @@
     "description": "Balanced deck with solid creatures and tactical plays",
     "cards": [
       {
-        "name": "Guerrero Novato",
+        "name": "Guerrero pajero",
         "image": "/assets/local_cards/base2025/pajero.jpg",
         "type": "creature",
         "manaCost": 1,
@@ -376,7 +376,7 @@
         "charge": false
       },
       {
-        "name": "Oso de la Comarca",
+        "name": "Arti de la UOCRA",
         "image": "/assets/local_cards/arti_set/arti_uocra.jpeg",
         "type": "creature",
         "manaCost": 2,
@@ -431,7 +431,7 @@
         "charge": true
       },
       {
-        "name": "Elemental de Fuego",
+        "name": "Gino de Fuego",
         "image": "/assets/local_cards/base2025/gino_amazed.webp",
         "type": "creature",
         "manaCost": 5,
@@ -448,7 +448,7 @@
         "charge": false
       },
       {
-        "name": "Oso de la Comarca",
+        "name": "Arti de la UOCRA",
         "image": "/assets/local_cards/arti_set/arti_uocra.jpeg",
         "type": "creature",
         "manaCost": 2,
@@ -492,7 +492,7 @@
         "charge": true
       },
       {
-        "name": "Guerrero Novato",
+        "name": "Guerrero pajero",
         "image": "/assets/local_cards/base2025/pajero.jpg",
         "type": "creature",
         "manaCost": 1,
@@ -510,7 +510,7 @@
     "description": "Combo-focused deck with small synergistic plays",
     "cards": [
       {
-        "name": "Célula Replicante",
+        "name": "Gordona Replicante",
         "image": "/assets/local_cards/gordona/left.jpg",
         "type": "creature",
         "manaCost": 2,
@@ -527,7 +527,7 @@
         "charge": false
       },
       {
-        "name": "Fisión de Átomos",
+        "name": "Spam de maurito",
         "image": "/assets/local_cards/achis/14.jpg",
         "type": "spell",
         "manaCost": 1,
@@ -549,7 +549,7 @@
         "charge": true
       },
       {
-        "name": "Catalizador de Enjambre",
+        "name": "Catalizador de Gordonas",
         "image": "/assets/local_cards/gordona/contento.jpg",
         "type": "creature",
         "manaCost": 3,
@@ -567,7 +567,7 @@
         "charge": false
       },
       {
-        "name": "Micro-Chispa",
+        "name": "Mister-Chispa",
         "image": "/assets/local_cards/base2025ext/burbujas.jpg",
         "type": "spell",
         "manaCost": 1,
@@ -584,7 +584,7 @@
         "charge": true
       },
       {
-        "name": "Ocurrencia Resonance",
+        "name": "Santerk viajero",
         "image": "/assets/local_cards/base2026/santerk_viajero.jpeg",
         "type": "creature",
         "manaCost": 4,
@@ -602,7 +602,7 @@
         "charge": false
       },
       {
-        "name": "Enjambre Furioso",
+        "name": "Gordona Furioso",
         "image": "/assets/local_cards/gordona/right.jpg",
         "type": "spell",
         "manaCost": 2,
@@ -626,7 +626,7 @@
         "charge": true
       },
       {
-        "name": "Fisión de Átomos",
+        "name": "Spam de maurito",
         "image": "/assets/local_cards/achis/14.jpg",
         "type": "spell",
         "manaCost": 1,
@@ -648,7 +648,7 @@
         "charge": true
       },
       {
-        "name": "Micro-Chispa",
+        "name": "Mister-Chispa",
         "image": "/assets/local_cards/base2025ext/burbujas.jpg",
         "type": "spell",
         "manaCost": 1,
@@ -665,7 +665,7 @@
         "charge": true
       },
       {
-        "name": "Célula Replicante",
+        "name": "Gordona Replicante",
         "image": "/assets/local_cards/gordona/left.jpg",
         "type": "creature",
         "manaCost": 2,
@@ -682,7 +682,7 @@
         "charge": false
       },
       {
-        "name": "Catalizador de Enjambre",
+        "name": "Catalizador de Gordonas",
         "image": "/assets/local_cards/gordona/contento.jpg",
         "type": "creature",
         "manaCost": 3,
@@ -724,7 +724,7 @@
         "charge": true
       },
       {
-        "name": "Escudo Mágico Neutral",
+        "name": "Escudo Mágico UOCRA",
         "image": "/assets/local_cards/base2026/kevin_laburando.jpeg",
         "type": "spell",
         "manaCost": 1,
@@ -741,7 +741,7 @@
         "charge": true
       },
       {
-        "name": "Mercenario Errante",
+        "name": "Maurito Errante",
         "image": "/assets/local_cards/achis/5_bis.jpg",
         "type": "creature",
         "manaCost": 3,
@@ -793,7 +793,7 @@
         "taunt": true
       },
       {
-        "name": "Dragón Ancestral Neutral",
+        "name": "Posta 2013 Ancestral",
         "image": "/assets/local_cards/base2026/posta_controversy.jpeg",
         "type": "creature",
         "manaCost": 6,
@@ -810,7 +810,7 @@
         "charge": false
       },
       {
-        "name": "Escudo Mágico Neutral",
+        "name": "Escudo Mágico UOCRA",
         "image": "/assets/local_cards/base2026/kevin_laburando.jpeg",
         "type": "spell",
         "manaCost": 1,
@@ -827,7 +827,7 @@
         "charge": true
       },
       {
-        "name": "Mercenario Errante",
+        "name": "Maurito Errante",
         "image": "/assets/local_cards/achis/5_bis.jpg",
         "type": "creature",
         "manaCost": 3,
