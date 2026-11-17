@@ -47,12 +47,30 @@ const view = computed(() => (props.card as any)?.cards
       } as DbUserCard
     })()
   )
+
+const rarityBorderClass = computed(() => {
+  const rarity = view.value.cards.rarity?.toLowerCase()
+  switch (rarity) {
+    case 'common':
+      return 'border-gray-400 dark:border-gray-500'
+    case 'uncommon':
+      return 'border-green-500'
+    case 'rare':
+      return 'border-blue-500'
+    case 'epic':
+      return 'border-purple-500'
+    case 'legendary':
+      return 'border-amber-500'
+    default:
+      return 'border-gray-300 dark:border-gray-600'
+  }
+})
 </script>
 
 <template>
   <div
-    class="relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 justify-between flex flex-col"
-    :class="[fill ? 'w-full h-full' : '', view.cards.tcg_combat_data?.taunt ? 'ring-2 ring-amber-400' : '']"
+    class="relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 justify-between flex flex-col border-2"
+    :class="[fill ? 'w-full h-full' : '', rarityBorderClass]"
   >
     <img
       :src="view.cards.image || 'https://via.placeholder.com/150'"

@@ -7,6 +7,7 @@ import BattleLog from '@/components/game/BattleLog.vue'
 import { createAiController, useOnlineController, type BattleController, type LocalDeck } from '@/composables/useBattleController'
 import { getSelectedEnemy } from '@/game/enemies'
 import { useDecks } from '@/game/useDecks'
+import { supabase } from '@/lib/supabase'
 
 import type { BoardCreature } from '@/game/types'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
@@ -32,6 +33,9 @@ const isOnline = !!onlineCode && !!onlineRole
 
 // The opponent chosen in the enemy select view (falls back to the first).
 const enemy = getSelectedEnemy()
+
+// Loading state while controller initializes
+const isLoading = ref(true)
 
 // Card revealed in the centre of the board when the opponent plays.
 const ghostCard = ref<CardData | null>(null)
@@ -66,12 +70,28 @@ async function revealOpponentCard(card: CardData): Promise<void> {
 let controller: BattleController
 let destroyOnline: (() => void) | null = null
 
+async function initController() {
   if (isOnline) {
+    // Fetch opponent name from match data
+    let oppName = 'Opponent'
+    const { data, error } = await supabase
+      .from('tcg_matches')
+      .select('host_name, guest_name')
+      .eq('code', onlineCode)
+      .single()
+
+    if (!error && data) {
+      // If we're the host, opponent is guest_name; if we're guest, opponent is host_name
+      oppName = onlineRole === 'host'
+        ? (data.guest_name ?? 'Opponent')
+        : (data.host_name ?? 'Opponent')
+    }
+
     const online = useOnlineController({
       code: onlineCode,
       role: onlineRole,
       selfName: 'You',
-      opponentName: 'Opponent',
+      opponentName: oppName,
       selfDeck: playerDeck,
       opponentDeck: [...playerDeck.templates],
       opponentMaxHp: 30,
@@ -80,12 +100,17 @@ let destroyOnline: (() => void) | null = null
     controller = online.controller
     destroyOnline = online.destroy
   } else {
-  controller = createAiController(playerDeck, [...enemy.deck], {
-    opponentName: enemy.name,
-    opponentMaxHp: enemy.hp,
-    onOpponentPlay: (card) => revealOpponentCard(card),
-  })
+    controller = createAiController(playerDeck, [...enemy.deck], {
+      opponentName: enemy.name,
+      opponentMaxHp: enemy.hp,
+      onOpponentPlay: (card) => revealOpponentCard(card),
+    })
+  }
+  isLoading.value = false
 }
+
+// Initialize controller
+initController()
 
 async function playerPlayCard(card: CardData): Promise<boolean> {
   return controller.playCard(card)
@@ -339,12 +364,20 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <!-- Loading state -->
+  <div v-if="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-gray-900">
+    <div class="text-center">
+      <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-gray-600 dark:text-gray-400">Loading battle...</p>
+    </div>
+  </div>
+
   <!-- Capped to the app's 450px column and centered; the -translate-x-1/2 is
        deliberate — a transformed ancestor becomes the containing block for
        every `position: fixed` descendant (mana bar, context bar, ghost card,
        toasts, overlay), so they all re-anchor to this column instead of the
        window. -->
-  <div class="fixed inset-y-0 left-1/2 -translate-x-1/2 z-30 w-full max-w-[450px] flex flex-col overflow-hidden overscroll-contain select-none bg-white dark:bg-gray-900">
+  <div v-else class="fixed inset-y-0 left-1/2 -translate-x-1/2 z-30 w-full max-w-[450px] flex flex-col overflow-hidden overscroll-contain select-none bg-white dark:bg-gray-900">
 
     <!-- Left: fixed vertical mana bar -->
     <aside class="fixed left-0 top-0 bottom-0 w-12 z-40 bg-gray-100 dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center justify-between py-2">

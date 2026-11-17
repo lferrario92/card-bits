@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { CardTemplate } from '@/game/types'
 
 interface Props {
@@ -10,12 +11,30 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   compact: false
 })
+
+const rarityBorderClass = computed(() => {
+  const rarity = props.card.rarity?.toLowerCase()
+  switch (rarity) {
+    case 'common':
+      return 'border-gray-400 dark:border-gray-500'
+    case 'uncommon':
+      return 'border-green-500'
+    case 'rare':
+      return 'border-blue-500'
+    case 'epic':
+      return 'border-purple-500'
+    case 'legendary':
+      return 'border-amber-500'
+    default:
+      return 'border-gray-300 dark:border-gray-600'
+  }
+})
 </script>
 
 <template>
   <div
-    class="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800"
-    :class="compact ? 'w-32' : ''"
+    class="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border-2"
+    :class="[compact ? 'w-32' : '', rarityBorderClass]"
   >
     <img
       :src="card.image"

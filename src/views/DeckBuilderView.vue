@@ -80,6 +80,32 @@ function maxCopiesFor(card: CardTemplate): number {
   return Math.min(MAX_COPIES, owned)
 }
 
+// Extract base name by removing " (Edición Legendaria)" suffix
+function getBaseName(cardName: string): string {
+  return cardName.replace(' (Edición Legendaria)', '')
+}
+
+// Check if a card has a legendary edition in the user's collection
+function hasLegendaryEdition(card: CardTemplate): boolean {
+  const baseName = getBaseName(card.title)
+  const legendaryName = `${baseName} (Edición Legendaria)`
+  return userCards.value.some(uc => uc.cards.name === legendaryName && uc.count > 0)
+}
+
+// Count total copies of a card including both regular and legendary editions
+function getTotalCopiesForBaseName(baseName: string): number {
+  let total = 0
+  const regularName = baseName
+  const legendaryName = `${baseName} (Edición Legendaria)`
+
+  for (const c of editingDeck.value?.cards ?? []) {
+    if (c.title === regularName || c.title === legendaryName) {
+      total++
+    }
+  }
+  return total
+}
+
 /** Deck contents grouped by card, preserving first-seen order. */
 const deckGroups = computed<{ card: CardTemplate; count: number }[]>(() => {
   const d = editingDeck.value
@@ -225,7 +251,20 @@ function confirmDelete(id: string, name: string) {
 
 function canAdd(card: CardTemplate): boolean {
   const limit = maxCopiesFor(card)
-  return total.value < MAX_CARDS && (counts.value[cardKey(card)] ?? 0) < limit
+  const currentCopies = counts.value[cardKey(card)] ?? 0
+
+  // Basic checks: deck size and per-card limit
+  if (total.value >= MAX_CARDS) return false
+  if (currentCopies >= limit) return false
+
+  // Check for legendary edition rule: max 3 total with same base name
+  const baseName = getBaseName(card.title)
+  const totalBaseCopies = getTotalCopiesForBaseName(baseName)
+
+  // If adding this card would exceed 3 total with same base name, prevent it
+  if (totalBaseCopies >= 3) return false
+
+  return true
 }
 
 function isCurrent(id: string): boolean {
